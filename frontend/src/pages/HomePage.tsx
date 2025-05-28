@@ -21,8 +21,8 @@ const HomePage: React.FC = () => {
   return (
     <>
       <FeaturedGames games={featuredGames} />
-      
-      <div className="bg-[#121212]">
+
+        <div className="bg-[#121212]">
         {freeGames.length > 0 && (
           <GameGrid games={freeGames} title="Trò chơi miễn phí" />
         )}

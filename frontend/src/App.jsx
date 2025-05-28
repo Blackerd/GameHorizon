@@ -5,25 +5,34 @@ import Footer from './components/Footer/Footer';
 import HomePage from './pages/HomePage';
 import GameDetailsPage from './pages/GameDetailsPage';
 import CartPage from './pages/CartPage';
+import LoginPage from './pages/LoginPage';
+import RegisterPage from './pages/RegisterPage';
+import AccountPage from './pages/AccountPage';
+import CheckoutPage from './pages/CheckoutPage';
 import { CartProvider } from './context/CartContext';
 
 function App() {
   return (
-    <CartProvider>
-      <Router>
-        <div className="min-h-screen flex flex-col bg-[#121212]">
-          <Header />
-          <main className="flex-1">
-            <Routes>
-              <Route path="/" element={<HomePage />} />
-              <Route path="/game/:id" element={<GameDetailsPage />} />
-              <Route path="/cart" element={<CartPage />} />
-            </Routes>
-          </main>
-          <Footer />
-        </div>
-      </Router>
-    </CartProvider>
+      <CartProvider>
+        <Router>
+          <div className="min-h-screen flex flex-col bg-[#121212]">
+            <Header />
+            <main className="flex-1">
+              <Routes>
+                <Route path="/home" element={<HomePage />} />
+
+                <Route path="/" element={<LoginPage />} />
+                <Route path="/game/:id" element={<GameDetailsPage />} />
+                <Route path="/cart" element={<CartPage />} />
+                <Route path="/register" element={<RegisterPage />} />
+                <Route path="/account" element={<AccountPage />} />
+                <Route path="/checkout" element={<CheckoutPage />} />
+              </Routes>
+            </main>
+            <Footer />
+          </div>
+        </Router>
+      </CartProvider>
   );
 }
 
