@@ -18,7 +18,7 @@ const Header: React.FC = () => {
       <div className="container mx-auto px-4 py-3 flex items-center justify-between">
         <div className="flex items-center">
           <Link to="/" className="flex items-center">
-            <span className="text-[#0078F2] font-bold text-2xl mr-2">Game Horizon</span>
+            <span className="text-[#0078F2] font-bold text-2xl mr-2">Game Horizon </span>
             <span className="font-semibold hidden md:inline">Game Store</span>
           </Link>
         </div>
@@ -47,10 +47,11 @@ const Header: React.FC = () => {
               </span>
             )}
           </Link>
-          <button className="text-gray-300 hover:text-white transition-colors hidden md:block">
-            <User size={24} />
-          </button>
-          <button 
+          <Link to="/account">
+            <button className="text-gray-300 hover:text-white transition-colors hidden md:block">
+              <User size={24} />
+            </button>
+          </Link>          <button
             className="md:hidden text-gray-300 hover:text-white transition-colors"
             onClick={toggleMenu}
           >

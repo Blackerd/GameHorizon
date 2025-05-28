@@ -10,8 +10,9 @@ interface FeaturedGamesProps {
 
 const FeaturedGames: React.FC<FeaturedGamesProps> = ({ games }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
-  const { addToCart, isInCart } = useCart();
-  
+  const { addToCart, isInCart, removeFromCart } = useCart();
+
+
   const nextSlide = () => {
     setCurrentIndex((prevIndex) => (prevIndex + 1) % games.length);
   };
@@ -93,15 +94,20 @@ const FeaturedGames: React.FC<FeaturedGamesProps> = ({ games }) => {
               Xem chi tiết
             </Link>
             <button
-              onClick={() => addToCart(currentGame)}
-              disabled={inCart}
-              className={`px-6 py-3 rounded font-semibold ${
-                inCart
-                  ? 'bg-green-600 text-white'
-                  : 'bg-[#0078F2] text-white hover:bg-[#0060c7] transition-colors'
-              }`}
+                onClick={() => {
+                  if (inCart) {
+                    removeFromCart(currentGame.id); // Hủy mua
+                  } else {
+                    addToCart(currentGame); // Mua ngay
+                  }
+                }}
+                className={`px-6 py-3 rounded font-semibold ${
+                    inCart
+                        ? 'bg-green-600 text-white hover:bg-green-700' // Khi đã mua
+                        : 'bg-[#0078F2] text-white hover:bg-[#0060c7]'
+                } transition-colors`}
             >
-              {inCart ? 'Đã thêm vào giỏ' : 'Mua ngay'}
+              {inCart ? 'Đã thêm vào giỏ hàng)' : 'Mua ngay'}
             </button>
           </div>
         </div>
