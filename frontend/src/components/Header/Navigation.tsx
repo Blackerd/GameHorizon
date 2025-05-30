@@ -9,10 +9,9 @@ interface NavigationProps {
 
 const Navigation: React.FC<NavigationProps> = ({ isMenuOpen, toggleMenu }) => {
   const navItems = [
-    { title: 'Cửa hàng', icon: <Home size={20} />, path: '/' },
+    { title: 'Cửa hàng', icon: <Home size={20} />, path: '/home' },
     { title: 'Thư viện', icon: <Download size={20} />, path: '/library' },
     { title: 'Ưu đãi', icon: <Gift size={20} />, path: '/deals' },
-    { title: 'Tài khoản', icon: <User size={20} />, path: '/account' },
   ];
 
   return (
