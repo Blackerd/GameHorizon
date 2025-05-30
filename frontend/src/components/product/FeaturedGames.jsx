@@ -1,14 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { Game } from '../../types/Game';
-import { useCart } from '../../context/CartContext';
+import { useCart } from '../../contexts/CartContext';
 
-interface FeaturedGamesProps {
-  games: Game[];
-}
-
-const FeaturedGames: React.FC<FeaturedGamesProps> = ({ games }) => {
+const FeaturedGames = ({ games }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const { addToCart, isInCart } = useCart();
   

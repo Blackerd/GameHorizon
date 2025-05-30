@@ -23,7 +23,6 @@ import java.util.List;
 public class OrderController {
     private final OrderService orderService;
 
-    @PreAuthorize("hasRole('USER')")
     @PostMapping
     public int saveOrder(@RequestParam OrderMethod method, @RequestParam OrderStatus status,
             @RequestBody OrderRequestDTO orderRequestDTO) {
