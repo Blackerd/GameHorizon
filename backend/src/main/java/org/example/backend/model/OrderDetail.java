@@ -33,8 +33,10 @@ public class OrderDetail {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o)
+            return true;
+        if (o == null || getClass() != o.getClass())
+            return false;
 
         OrderDetail that = (OrderDetail) o;
 
@@ -46,4 +48,3 @@ public class OrderDetail {
         return id != null ? id.hashCode() : 0;
     }
 }
-

@@ -46,4 +46,3 @@ public class Product {
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL)
     private List<OrderDetail> orderDetails = new ArrayList<>();
 }
-

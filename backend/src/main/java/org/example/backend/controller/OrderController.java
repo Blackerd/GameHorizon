@@ -11,6 +11,7 @@ import org.example.backend.dto.response.OrderResponseDTO;
 import org.example.backend.service.OrderService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -22,8 +23,10 @@ import java.util.List;
 public class OrderController {
     private final OrderService orderService;
 
+    @PreAuthorize("hasRole('USER')")
     @PostMapping
-    public int saveOrder(@RequestParam OrderMethod method, @RequestParam OrderStatus status, @RequestBody OrderRequestDTO orderRequestDTO) {
+    public int saveOrder(@RequestParam OrderMethod method, @RequestParam OrderStatus status,
+            @RequestBody OrderRequestDTO orderRequestDTO) {
         orderRequestDTO.setPaymentMethod(method.getValue());
         orderRequestDTO.setStatus(status.getValue());
         return orderService.saveOrder(orderRequestDTO);
@@ -61,7 +64,7 @@ public class OrderController {
 
     @PutMapping("/status/{status}&&{orderId}")
     public ResponseEntity<String> changeOrderStatus(@PathVariable("status") OrderStatus status,
-                                                    @PathVariable("orderId") int orderId) {
+            @PathVariable("orderId") int orderId) {
         try {
             orderService.changeOrderStatus(orderId, status.getValue());
             return ResponseEntity.ok("Cập nhật trạng thái thành công!");
@@ -72,7 +75,8 @@ public class OrderController {
     }
 
     @GetMapping("/client/{status}&&{customerId}")
-    public List<OrderResponseDTO> getOrderByStatusAndCustomerId(@PathVariable String status, @PathVariable int customerId) {
+    public List<OrderResponseDTO> getOrderByStatusAndCustomerId(@PathVariable String status,
+            @PathVariable int customerId) {
         return orderService.getOrdersByStatusAndCustomerId(status, customerId);
     }
 }

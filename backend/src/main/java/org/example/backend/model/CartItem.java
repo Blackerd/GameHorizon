@@ -1,6 +1,5 @@
 package org.example.backend.model;
 
-
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -31,6 +30,5 @@ public class CartItem {
 
     @Column(name = "quantity", nullable = false)
     private int quantity;
-
 
 }
