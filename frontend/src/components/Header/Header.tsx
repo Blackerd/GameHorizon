@@ -4,7 +4,7 @@ import { Search, ShoppingCart, Menu, X, User } from 'lucide-react';
 import Navigation from './Navigation';
 import { useCart } from '../../context/CartContext';
 
-const Header: React.FC = () => {
+const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const { cart } = useCart();
