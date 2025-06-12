@@ -31,6 +31,8 @@ export const CustomerProvider = ({ children }) => {
     }
   };
 
+  const isAdmin = customer?.role === true;
+
   const registerCustomer = async (customerData) => {
     try {
       const { data } = await register(customerData);
@@ -47,7 +49,13 @@ export const CustomerProvider = ({ children }) => {
   };
 
   return (
-    <CustomerContext.Provider value={{ customer, loginCustomer, registerCustomer, logoutCustomer }}>
+    <CustomerContext.Provider value={{
+      customer,
+      loginCustomer,
+      registerCustomer,
+      logoutCustomer,
+      isAdmin,
+    }}>
       {children}
     </CustomerContext.Provider>
   );

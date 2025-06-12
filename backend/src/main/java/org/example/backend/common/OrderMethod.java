@@ -8,6 +8,7 @@ public enum OrderMethod {
     VN_PAY("Thanh toán qua VNPay"),
     MOMO("Thanh toán qua Momo"),
     ZALO_PAY("Thanh toán qua ZaloPay");
+
     private final String value;
 
     OrderMethod(String value) {

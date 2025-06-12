@@ -36,14 +36,25 @@ const Header = () => {
             <div className="flex items-center space-x-2">
               <User size={24} />
               <span>{customer.username}</span>
+               {customer.role === true && (
+                <Link to="/admin" className="text-[#0078F2] hover:underline">
+                  Quản trị
+                </Link>
+              )}
               <button onClick={logoutCustomer} className="text-[#0078F2] hover:underline">
                 Đăng xuất
               </button>
             </div>
           ) : (
-            <Link to="/login" className="text-[#0078F2]">
-              Đăng nhập
-            </Link>
+             <>
+              <Link to="/login" className="text-[#0078F2]">
+                Đăng nhập
+              </Link>
+              <Link to="/register" className="text-[#0078F2]">
+                Đăng ký
+              </Link>
+            </>
+                      
           )}
           <button className="md:hidden" onClick={toggleMenu}>
             {isMenuOpen ? <X size={24} /> : <Menu size={24} />}

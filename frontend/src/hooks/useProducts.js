@@ -11,7 +11,7 @@ export const useProducts = () =>
         id: product.id,
         name: product.name,
         price: product.price,
-        img: product.image || 'https://via.placeholder.com/150',
+        img: product.img || 'https://via.placeholder.com/150',
         categoryName: product.categoryName || 'Unknown'
       }));
     }
@@ -27,7 +27,7 @@ export const useProduct = (id) =>
         id: data.id,
         name: data.name,
         price: data.price,
-        img: data.image || 'https://via.placeholder.com/150',
+        img: data.img || 'https://via.placeholder.com/150',
         categoryName: data.categoryName || 'Unknown'
       };
     },
@@ -44,7 +44,7 @@ export const useProductsByCategory = (categoryId) =>
         id: product.id,
         name: product.name,
         price: product.price,
-        img: product.image || 'https://via.placeholder.com/150',
+        img: product.img || 'https://via.placeholder.com/150',
         categoryName: product.categoryName || 'Unknown'
       }));
     },
@@ -61,7 +61,7 @@ export const useSearchProducts = (name) =>
         id: product.id,
         name: product.name,
         price: product.price,
-        img: product.image || 'https://via.placeholder.com/150',
+        img: product.img || 'https://via.placeholder.com/150',
         categoryName: product.categoryName || 'Unknown'
       }));
     },
