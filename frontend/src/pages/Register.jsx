@@ -4,6 +4,7 @@ import { useCustomer } from '../context/CustomerContext.jsx';
 
 const Register = () => {
   const [formData, setFormData] = useState({
+    fullname: '',
     username: '',
     password: '',
     email: '',
@@ -34,6 +35,17 @@ const Register = () => {
         <h2 className="text-2xl font-bold mb-6 text-center">Đăng ký</h2>
         {error && <p className="text-red-500 mb-4">{error}</p>}
         <form onSubmit={handleSubmit}>
+          <div className="mb-4">
+            <label className="block mb-2">Họ và tên</label>
+            <input
+              type="text"
+              name="fullname"
+              value={formData.fullname}
+              onChange={handleChange}
+              className="w-full p-2 bg-[#303030] rounded text-white"
+              required
+            />
+          </div>
           <div className="mb-4">
             <label className="block mb-2">Tên đăng nhập</label>
             <input
