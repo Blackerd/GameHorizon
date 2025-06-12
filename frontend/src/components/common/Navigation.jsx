@@ -6,9 +6,6 @@ const Navigation = ({ isMenuOpen, toggleMenu }) => {
     { to: '/', label: 'Trang chủ' },
     { to: '/cart', label: 'Giỏ hàng' },
     { to: '/orders', label: 'Đơn hàng' },
-    { to: '/admin', label: 'Quản trị' },
-    { to: '/login', label: 'Đăng nhập' },
-    { to: '/register', label: 'Đăng ký' },
   ];
 
   return (

@@ -9,15 +9,19 @@ const Login = () => {
   const { loginCustomer } = useCustomer();
   const navigate = useNavigate();
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    try {
-      await loginCustomer(username, password);
+const handleSubmit = async (e) => {
+  e.preventDefault();
+  try {
+    const user = await loginCustomer(username, password);
+    if (user && user.role) {
+      navigate('/admin');
+    } else {
       navigate('/');
-    } catch (err) {
-      setError('Sai tên đăng nhập hoặc mật khẩu');
     }
-  };
+  } catch (err) {
+    setError('Sai tên đăng nhập hoặc mật khẩu');
+  }
+};
 
   return (
     <div className="bg-[#121212] min-h-screen flex items-center justify-center text-white">

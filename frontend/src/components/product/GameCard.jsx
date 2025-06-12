@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ShoppingCart, Check } from 'lucide-react';
 import { useCart } from '../../context/CartContext';
@@ -6,6 +6,15 @@ import { useCart } from '../../context/CartContext';
 const GameCard = ({ product }) => {
   const { addToCart, isInCart } = useCart();
   const inCart = isInCart(product.id);
+  const [showMsg, setShowMsg] = useState(false);
+
+  const handleAddToCart = () => {
+    if (!inCart) {
+      addToCart(product);
+      setShowMsg(true);
+      setTimeout(() => setShowMsg(false), 1200);
+    }
+  };
 
   return (
     <div className="bg-[#202020] rounded-lg overflow-hidden transition-transform duration-300 hover:-translate-y-1 hover:shadow-xl">
@@ -30,17 +39,25 @@ const GameCard = ({ product }) => {
           <span className="text-white font-semibold">
             {product.price.toLocaleString('vi-VN')}₫
           </span>
-          <button
-            onClick={() => addToCart(product)}
-            disabled={inCart}
-            className={`p-2 rounded-full ${
-              inCart
-                ? 'bg-green-600 text-white'
-                : 'bg-[#0078F2] text-white hover:bg-[#0060c7]'
-            }`}
-          >
-            {inCart ? <Check size={18} /> : <ShoppingCart size={18} />}
-          </button>
+          <div className="relative">
+            <button
+              onClick={handleAddToCart}
+              disabled={inCart}
+              className={`p-2 rounded-full transition ${
+                inCart
+                  ? 'bg-green-600 text-white cursor-not-allowed'
+                  : 'bg-[#0078F2] text-white hover:bg-[#0060c7]'
+              }`}
+              title={inCart ? 'Đã có trong giỏ hàng' : 'Thêm vào giỏ hàng'}
+            >
+              {inCart ? <Check size={18} /> : <ShoppingCart size={18} />}
+            </button>
+            {showMsg && (
+              <span className="absolute top-10 left-1/2 -translate-x-1/2 bg-black text-xs text-white px-2 py-1 rounded shadow">
+                Đã thêm vào giỏ hàng!
+              </span>
+            )}
+          </div>
         </div>
       </div>
     </div>
