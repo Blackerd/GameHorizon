@@ -14,23 +14,27 @@ export const CartProvider = ({ children }) => {
   const [cart, setCart] = useState([]);
   const { customer } = useCustomer();
 
-  const fetchCart = async () => {
-    if (!customer) {
-      setCart([]);
-      return;
-    }
-    try {
-      const { data } = await getCart(customer.id);
-      setCart(data.items || []);
-    } catch (error) {
-      console.error('Lỗi lấy giỏ hàng:', error);
-    }
-  };
+  // Lấy giỏ hàng khi user đăng nhập hoặc thay đổi
+const fetchCart = async () => {
+  if (!customer) {
+    setCart([]);
+    return;
+  }
+  try {
+    const { data } = await getCart(customer.id);
+    // Sửa dòng này:
+    setCart(Array.isArray(data.cartItems) ? data.cartItems : []);
+  } catch (error) {
+    setCart([]);
+    console.error('Lỗi lấy giỏ hàng:', error);
+  }
+};
 
   useEffect(() => {
     fetchCart();
   }, [customer]);
 
+  // Thêm sản phẩm vào giỏ hàng
   const addToCart = async (product) => {
     if (!customer) {
       alert('Vui lòng đăng nhập để thêm sản phẩm vào giỏ hàng');
@@ -39,13 +43,14 @@ export const CartProvider = ({ children }) => {
     if (!isInCart(product.id)) {
       try {
         await addCartItem({ cartId: customer.cartId, productId: product.id, quantity: 1 });
-        await fetchCart();
+        await fetchCart(); // Cập nhật lại giỏ hàng sau khi thêm
       } catch (error) {
         console.error('Lỗi thêm vào giỏ hàng:', error);
       }
     }
   };
 
+  // Xóa sản phẩm khỏi giỏ hàng
   const removeFromCart = async (cartItemId) => {
     try {
       await removeCartItem(cartItemId);
@@ -55,6 +60,7 @@ export const CartProvider = ({ children }) => {
     }
   };
 
+  // Xóa toàn bộ giỏ hàng
   const clearCartItems = async () => {
     if (!customer?.cartId) return;
     try {
@@ -65,6 +71,7 @@ export const CartProvider = ({ children }) => {
     }
   };
 
+  // Kiểm tra sản phẩm đã có trong giỏ hàng chưa
   const isInCart = (id) => cart.some((item) => item.productId === id);
 
   return (

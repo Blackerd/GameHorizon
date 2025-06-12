@@ -12,6 +12,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/address")
 @Tag(name = "Address", description = "Address API")
+
 public class AddressController {
 
     private final AddressService addressService;

@@ -7,6 +7,7 @@ import {
   updateCustomerByAdmin,
   createCustomer,
 } from '../api/customerApi';
+import { Trash2, Edit, Plus, Eye } from 'lucide-react';
 
 const UserManagement = () => {
   const queryClient = useQueryClient();
@@ -109,11 +110,11 @@ const UserManagement = () => {
     <div className="p-4">
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-xl font-bold">Quản lý khách hàng</h2>
-        <button
+       <button
           onClick={handleAdd}
-          className="bg-[#0078F2] text-white px-4 py-2 rounded hover:bg-[#0060c7]"
+          className="bg-[#0078F2] text-white px-4 py-2 rounded hover:bg-[#0060c7] flex items-center gap-2"
         >
-          Thêm khách hàng
+          <Plus size={18} /> Thêm khách hàng
         </button>
       </div>
       {isLoading ? (
@@ -145,19 +146,19 @@ const UserManagement = () => {
                     onClick={() => handleView(user.id)}
                     className="text-[#0078F2] hover:underline"
                   >
-                    Xem
+                    <Eye size={18} />
                   </button>
                   <button
                     onClick={() => handleEdit(user)}
                     className="text-yellow-400 hover:underline"
                   >
-                    Sửa
+                     <Edit size={18} />
                   </button>
                   <button
                     onClick={() => handleDelete(user.id)}
                     className="text-red-500 hover:underline"
                   >
-                    Xóa
+                    <Trash2 size={18} />
                   </button>
                 </td>
               </tr>

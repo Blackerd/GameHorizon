@@ -3,6 +3,7 @@ import { Users, List, Package } from 'lucide-react';
 import ProductManagement from './ProductManagement.jsx';
 import CategoryManagement from './CategoryManagement.jsx';
 import UserManagement from './UserManagement.jsx';
+import OrderManagement from './OrderManagement.jsx';
 
 const Admin = () => {
   const [activeTab, setActiveTab] = useState('products');
@@ -36,12 +37,21 @@ const Admin = () => {
         >
           <Users size={20} /> Quản lý người dùng
         </button>
+        <button
+          className={`flex items-center gap-2 px-4 py-2 rounded transition ${
+            activeTab === 'orders' ? 'bg-[#0078F2] text-white' : 'hover:bg-[#303030]'
+          }`}
+          onClick={() => setActiveTab('orders')}
+        >
+          <List size={20} /> Quản lý đơn hàng
+        </button>
       </aside>
       {/* Main content */}
       <main className="flex-1 p-8 bg-[#181818] min-h-screen overflow-auto">
         {activeTab === 'products' && <ProductManagement />}
         {activeTab === 'categories' && <CategoryManagement />}
         {activeTab === 'users' && <UserManagement />}
+        {activeTab === 'orders' && <OrderManagement />}
       </main>
     </div>
   );

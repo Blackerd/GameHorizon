@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ShoppingCart, Menu, X, User } from 'lucide-react';
+import { ShoppingCart, Menu, X, User, LogOutIcon } from 'lucide-react';
 import Navigation from './Navigation.jsx';
 import { useCart } from '../../context/CartContext.jsx';
 import { useCustomer } from '../../context/CustomerContext.jsx';
@@ -24,26 +24,28 @@ const Header = () => {
         </div>
 
         <div className="flex items-center space-x-4">
-          <Link to="/cart" className="relative">
-            <ShoppingCart size={24} />
-            {cart.length > 0 && (
-              <span className="absolute -top-2 -right-2 bg-[#0078F2] text-white text-xs rounded-full px-2 py-1">
-                {cart.length}
-              </span>
-            )}
-          </Link>
+            <Link to="/cart" className="relative">
+              <ShoppingCart size={24} />
+              {cart.length > 0 && (
+                <span className="absolute -top-2 -right-2 bg-[#0078F2] text-white text-xs rounded-full px-2 py-1">
+                  {cart.length}
+                </span>
+              )}
+            </Link>
           {customer ? (
             <div className="flex items-center space-x-2">
-              <User size={24} />
-              <span>{customer.username}</span>
-               {customer.role === true && (
-                <Link to="/admin" className="text-[#0078F2] hover:underline">
-                  Quản trị
-                </Link>
-              )}
-              <button onClick={logoutCustomer} className="text-[#0078F2] hover:underline">
-                Đăng xuất
-              </button>
+            <Link to="/profile" className="flex items-center">
+            <User size={24} className="hover:text-[#0078F2] transition" />
+          </Link>
+              <span>{customer.fullname}</span>
+           <button
+            onClick={logoutCustomer}
+            className="text-[#0078F2] hover:bg-[#232323] rounded-full p-1 transition"
+            aria-label="Đăng xuất"
+            title="Đăng xuất"
+          >
+            <LogOutIcon size={20} />
+          </button>
             </div>
           ) : (
              <>

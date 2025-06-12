@@ -1,57 +1,55 @@
 import React from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { getOrders } from '../api/orderApi';
-import { useCustomer } from '../context/CustomerContext.jsx';
-import Loading from '../components/common/Loading.jsx';
+import { getOrdersByCustomerId } from '../api/orderApi';
+import { useCustomer } from '../context/CustomerContext';
 
 const OrderHistory = () => {
   const { customer } = useCustomer();
-  const { data: orders, isLoading, isError, error } = useQuery({
-    queryKey: ['orders', customer?.id],
-    queryFn: () => getOrders(customer?.id),
-    enabled: !!customer
+  const customerId = customer?.id;
+
+  const { data: ordersRaw, isLoading, isError } = useQuery({
+    queryKey: ['orders', customerId],
+    queryFn: () => getOrdersByCustomerId(customerId),
+    enabled: !!customerId,
   });
 
-  if (!customer) {
-    return (
-      <div className="bg-[#121212] min-h-screen flex items-center justify-center text-white">
-        <p>Vui lòng đăng nhập để xem lịch sử đơn hàng.</p>
-      </div>
-    );
-  }
+  // Đảm bảo orders luôn là mảng
+  const orders = Array.isArray(ordersRaw)
+    ? ordersRaw
+    : (ordersRaw && Array.isArray(ordersRaw.data) ? ordersRaw.data : []);
 
-  if (isLoading) {
-    return (
-      <div className="bg-[#121212] min-h-screen flex items-center justify-center">
-        <Loading />
-      </div>
-    );
-  }
-
-  if (isError) {
-    return (
-      <div className="bg-[#121212] min-h-screen flex items-center justify-center text-white">
-        <p>Lỗi: {error?.message || 'Không thể tải đơn hàng.'}</p>
-      </div>
-    );
-  }
+  if (!customerId) return <p>Bạn cần đăng nhập để xem đơn hàng.</p>;
 
   return (
-    <div className="container mx-auto px-4 py-12 bg-[#121212] text-white">
-      <h1 className="text-3xl font-bold mb-8">Lịch sử đơn hàng</h1>
-      {orders?.length === 0 ? (
-        <p>Chưa có đơn hàng nào.</p>
+    <div className="p-4">
+      <h2 className="text-xl font-bold mb-4">Lịch sử đơn hàng</h2>
+      {isLoading ? (
+        <p>Đang tải...</p>
+      ) : isError ? (
+        <p>Lỗi khi tải đơn hàng</p>
+      ) : orders.length === 0 ? (
+        <p>Bạn chưa có đơn hàng nào.</p>
       ) : (
-        <div className="bg-[#202020] rounded-lg p-6">
-          {orders?.map((order) => (
-            <div key={order.id} className="border-b border-[#303030] py-4">
-              <p className="font-semibold">Mã đơn hàng: {order.id}</p>
-              <p>Tổng tiền: {order.total.toLocaleString('vi-VN')}₫</p>
-              <p>Trạng thái: {order.status}</p>
-              <p>Ngày đặt: {new Date(order.orderDate).toLocaleDateString('vi-VN')}</p>
-            </div>
-          ))}
-        </div>
+        <table className="w-full bg-[#202020] rounded">
+          <thead>
+            <tr className="bg-[#303030]">
+              <th className="p-2">Mã đơn</th>
+              <th className="p-2">Ngày đặt</th>
+              <th className="p-2">Tổng tiền</th>
+              <th className="p-2">Trạng thái</th>
+            </tr>
+          </thead>
+          <tbody>
+            {orders.map((order) => (
+              <tr key={order.id} className="border-t border-[#303030]">
+                <td className="p-2">{order.id}</td>
+                <td className="p-2">{order.orderDate}</td>
+                <td className="p-2">{order.totalAmount}₫</td>
+                <td className="p-2">{order.status}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       )}
     </div>
   );

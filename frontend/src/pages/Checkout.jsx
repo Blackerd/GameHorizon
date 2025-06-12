@@ -3,7 +3,14 @@ import { useNavigate } from 'react-router-dom';
 import { useCart } from '../context/CartContext.jsx';
 import { useCustomer } from '../context/CustomerContext.jsx';
 import { createOrder } from '../api/orderApi';
-import { getDefaultAddress, createAddress, getAddressesByCustomer } from '../api/addressApi';
+import { getDefaultAddress, getAddressesByCustomer } from '../api/addressApi';
+
+const PAYMENT_METHODS = [
+  { value: 'COD', label: 'Thanh toán khi nhận hàng' },
+  { value: 'VN_PAY', label: 'Thanh toán qua VNPay' },
+  { value: 'MOMO', label: 'Thanh toán qua Momo' },
+  { value: 'ZALO_PAY', label: 'Thanh toán qua ZaloPay' },
+];
 
 const Checkout = () => {
   const { cart, clearCart } = useCart();
@@ -11,42 +18,32 @@ const Checkout = () => {
   const navigate = useNavigate();
   const [addresses, setAddresses] = useState([]);
   const [selectedAddress, setSelectedAddress] = useState(null);
-  const [newAddress, setNewAddress] = useState({
-    province: '',
-    district: '',
-    ward: '',
-    detail: '',
-    receiver: '',
-    phone: ''
-  });
-  const [showNewAddressForm, setShowNewAddressForm] = useState(false);
+  const [method, setMethod] = useState('COD');
 
-  const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+  const total = cart.reduce(
+    (sum, item) => sum + ((item.product?.price || item.price || 0) * (item.quantity || 1)),
+    0
+  );
 
   useEffect(() => {
-    if (customer) {
-      fetchAddresses();
-      fetchDefaultAddress();
-    }
-  }, [customer]);
-
-  const fetchAddresses = async () => {
-    try {
-      const { data } = await getAddressesByCustomer(customer.id);
-      setAddresses(data);
-    } catch (error) {
-      console.error('Lỗi lấy danh sách địa chỉ:', error);
-    }
-  };
-
-  const fetchDefaultAddress = async () => {
-    try {
-      const { data } = await getDefaultAddress(customer.id);
-      setSelectedAddress(data);
-    } catch (error) {
-      console.error('Lỗi lấy địa chỉ mặc định:', error);
-    }
-  };
+    if (!customer) return;
+    const fetchAddresses = async () => {
+      try {
+        const { data } = await getAddressesByCustomer(customer.id);
+        setAddresses(data || []);
+        if (!data || data.length === 0) {
+          alert('Bạn cần thêm địa chỉ giao hàng trước khi thanh toán!');
+          navigate('/address');
+        } else {
+          const def = await getDefaultAddress(customer.id);
+          setSelectedAddress(def.data?.id ? def.data : data[0]);
+        }
+      } catch (error) {
+        console.error('Lỗi lấy địa chỉ:', error);
+      }
+    };
+    fetchAddresses();
+  }, [customer, navigate]);
 
   const handleAddressChange = (e) => {
     const addressId = parseInt(e.target.value);
@@ -54,58 +51,46 @@ const Checkout = () => {
     setSelectedAddress(address);
   };
 
-  const handleNewAddressChange = (e) => {
-    setNewAddress({ ...newAddress, [e.target.name]: e.target.value });
-  };
-
-  const handleAddAddress = async (e) => {
-    e.preventDefault();
-    if (!customer) return;
-    try {
-      const { data } = await createAddress({
-        customerId: customer.id,
-        ...newAddress,
-        isDefault: addresses.length === 0
-      });
-      setAddresses([...addresses, data]);
-      setSelectedAddress(data);
-      setShowNewAddressForm(false);
-      setNewAddress({ province: '', district: '', ward: '', detail: '', receiver: '', phone: '' });
-    } catch (error) {
-      console.error('Lỗi thêm địa chỉ:', error);
-      alert('Không thể thêm địa chỉ mới.');
-    }
-  };
-
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (!customer) {
-      alert('Vui lòng đăng nhập để thanh toán');
-      navigate('/login');
-      return;
-    }
-    if (!selectedAddress) {
-      alert('Vui lòng chọn hoặc thêm địa chỉ giao hàng');
-      return;
-    }
-    try {
-      await createOrder({
+  e.preventDefault();
+  if (!customer) {
+    alert('Vui lòng đăng nhập để thanh toán');
+    navigate('/login');
+    return;
+  }
+  if (!selectedAddress) {
+    alert('Vui lòng chọn địa chỉ giao hàng');
+    return;
+  }
+  try {
+    await createOrder(
+      {
         customerId: customer.id,
         orderDetails: cart.map(item => ({
-          productId: item.productId,
+          productId: item.product?.id || item.productId,
           quantity: item.quantity
         })),
-        total: total,
-        addressId: selectedAddress.id
-      }, 'CARD', 'PENDING');
-      await clearCart();
-      alert('Đặt hàng thành công!');
-      navigate('/orders');
-    } catch (error) {
-      console.error('Lỗi đặt hàng:', error);
+        totalAmount: total, // Đúng tên trường backend yêu cầu
+        address: selectedAddress.address,
+        numberPhone: selectedAddress.numberPhone,
+        receiver: selectedAddress.receiver
+      },
+      method,
+      'PENDING'
+    );
+    await clearCart();
+    alert('Đặt hàng thành công!');
+    navigate('/orders');
+  } catch (error) {
+    // Hiển thị lỗi chi tiết hơn cho user
+    if (error.response && error.response.data && error.response.data.message) {
+      alert('Lỗi khi đặt hàng: ' + error.response.data.message);
+    } else {
       alert('Lỗi khi đặt hàng. Vui lòng thử lại.');
     }
-  };
+    console.error('Lỗi đặt hàng:', error);
+  }
+};
 
   return (
     <div className="bg-[#121212] min-h-screen text-white py-8">
@@ -117,101 +102,41 @@ const Checkout = () => {
             <div className="mb-4">
               <label className="block mb-2">Chọn địa chỉ</label>
               <select
+                value={selectedAddress?.id || ''}
                 onChange={handleAddressChange}
                 className="w-full p-2 bg-[#303030] rounded text-white"
               >
-                <option value="">Chọn địa chỉ</option>
                 {addresses.map(addr => (
                   <option key={addr.id} value={addr.id}>
-                    {addr.detail}, {addr.ward}, {addr.district}, {addr.province}
+                    {addr.receiver} - {addr.numberPhone} | {addr.address}
                   </option>
                 ))}
               </select>
+              <div className="mt-2 text-sm text-gray-400">
+                {selectedAddress && (
+                  <>
+                    <div><b>Người nhận:</b> {selectedAddress.receiver}</div>
+                    <div><b>SĐT:</b> {selectedAddress.numberPhone}</div>
+                    <div><b>Địa chỉ:</b> {selectedAddress.address}</div>
+                    {selectedAddress.note && <div><b>Ghi chú:</b> {selectedAddress.note}</div>}
+                  </>
+                )}
+              </div>
             </div>
           )}
-          <button
-            onClick={() => setShowNewAddressForm(!showNewAddressForm)}
-            className="text-[#0078F2] hover:underline mb-4"
-          >
-            {showNewAddressForm ? 'Hủy' : 'Thêm địa chỉ mới'}
-          </button>
-          {showNewAddressForm && (
-            <form onSubmit={handleAddAddress} className="mb-6">
-              <div className="mb-4">
-                <label className="block mb-2">Tỉnh/Thành phố</label>
-                <input
-                  type="text"
-                  name="province"
-                  value={newAddress.province}
-                  onChange={handleNewAddressChange}
-                  className="w-full p-2 bg-[#303030] rounded text-white"
-                  required
-                />
-              </div>
-              <div className="mb-4">
-                <label className="block mb-2">Quận/Huyện</label>
-                <input
-                  type="text"
-                  name="district"
-                  value={newAddress.district}
-                  onChange={handleNewAddressChange}
-                  className="w-full p-2 bg-[#303030] rounded text-white"
-                  required
-                />
-              </div>
-              <div className="mb-4">
-                <label className="block mb-2">Phường/Xã</label>
-                <input
-                  type="text"
-                  name="ward"
-                  value={newAddress.ward}
-                  onChange={handleNewAddressChange}
-                  className="w-full p-2 bg-[#303030] rounded text-white"
-                  required
-                />
-              </div>
-              <div className="mb-4">
-                <label className="block mb-2">Chi tiết địa chỉ</label>
-                <input
-                  type="text"
-                  name="detail"
-                  value={newAddress.detail}
-                  onChange={handleNewAddressChange}
-                  className="w-full p-2 bg-[#303030] rounded text-white"
-                  required
-                />
-              </div>
-              <div className="mb-4">
-                <label className="block mb-2">Người nhận</label>
-                <input
-                  type="text"
-                  name="receiver"
-                  value={newAddress.receiver}
-                  onChange={handleNewAddressChange}
-                  className="w-full p-2 bg-[#303030] rounded text-white"
-                  required
-                />
-              </div>
-              <div className="mb-4">
-                <label className="block mb-2">Số điện thoại</label>
-                <input
-                  type="text"
-                  name="phone"
-                  value={newAddress.phone}
-                  onChange={handleNewAddressChange}
-                  className="w-full p-2 bg-[#303030] rounded text-white"
-                  required
-                />
-              </div>
-              <button
-                type="submit"
-                className="w-full bg-[#0078F2] text-white py-2 rounded hover:bg-[#0060c7]"
-              >
-                Thêm địa chỉ
-              </button>
-            </form>
-          )}
           <form onSubmit={handleSubmit}>
+            <div className="mb-4">
+              <label className="block mb-2">Phương thức thanh toán</label>
+              <select
+                value={method}
+                onChange={e => setMethod(e.target.value)}
+                className="w-full p-2 bg-[#303030] rounded text-white"
+              >
+                {PAYMENT_METHODS.map(opt => (
+                  <option key={opt.value} value={opt.value}>{opt.label}</option>
+                ))}
+              </select>
+            </div>
             <div className="mb-6">
               <p className="text-xl font-bold">Tổng cộng: {total.toLocaleString('vi-VN')}₫</p>
             </div>

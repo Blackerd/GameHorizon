@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { useCategories } from '../hooks/useCategories';
 import { createCategory, updateCategory, deleteCategory } from '../api/categoryApi';
+import { Trash2, Edit, Plus, Eye } from 'lucide-react';
 
 const CategoryManagement = () => {
   const queryClient = useQueryClient();
@@ -121,13 +122,13 @@ const CategoryManagement = () => {
                         onClick={() => handleEdit(cat)}
                         className="text-[#0078F2] hover:underline"
                       >
-                        Sửa
+                        <Edit size={20} />
                       </button>
                       <button
                         onClick={() => handleDelete(cat.id)}
                         className="text-red-500 hover:underline"
                       >
-                        Xóa
+                        <Trash2 size={20} />
                       </button>
                     </div>
                   </td>
