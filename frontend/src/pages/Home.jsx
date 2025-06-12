@@ -1,10 +1,12 @@
-import React from 'react';
+import React, { useState } from 'react';
 import GameGrid from '../components/product/GameGrid.jsx';
 import Loading from '../components/common/Loading.jsx';
 import { useProducts } from '../hooks/useProducts';
+import CategoryGrid from '../components/category/CategoryGrid.jsx';
 
 const Home = () => {
   const { data: products, isLoading, isError, error } = useProducts();
+  const [selectedCategory, setSelectedCategory] = useState(null);
 
   if (isLoading) {
     return (
@@ -36,10 +38,19 @@ const Home = () => {
     );
   }
 
-  return (
+  // Lọc sản phẩm theo danh mục nếu có chọn
+  const filteredProducts = selectedCategory
+    ? products.filter(p => p.categoryId === selectedCategory.id || p.category?.id === selectedCategory.id)
+    : products;
+
+return (
     <div className="bg-[#121212] min-h-screen py-8">
       <div className="container mx-auto px-4">
-        <GameGrid products={products} title="Sản phẩm nổi bật" />
+        <CategoryGrid />
+        <GameGrid
+          products={products}
+          title="Sản phẩm nổi bật"
+        />
       </div>
     </div>
   );
