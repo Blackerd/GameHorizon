@@ -18,39 +18,44 @@ const OrderHistory = () => {
     ? ordersRaw
     : (ordersRaw && Array.isArray(ordersRaw.data) ? ordersRaw.data : []);
 
-  if (!customerId) return <p>Bạn cần đăng nhập để xem đơn hàng.</p>;
+  if (!customerId) return <p className="p-8 text-center text-white">Bạn cần đăng nhập để xem đơn hàng.</p>;
 
   return (
-    <div className="p-4">
-      <h2 className="text-xl font-bold mb-4">Lịch sử đơn hàng</h2>
-      {isLoading ? (
-        <p>Đang tải...</p>
-      ) : isError ? (
-        <p>Lỗi khi tải đơn hàng</p>
-      ) : orders.length === 0 ? (
-        <p>Bạn chưa có đơn hàng nào.</p>
-      ) : (
-        <table className="w-full bg-[#202020] rounded">
-          <thead>
-            <tr className="bg-[#303030]">
-              <th className="p-2">Mã đơn</th>
-              <th className="p-2">Ngày đặt</th>
-              <th className="p-2">Tổng tiền</th>
-              <th className="p-2">Trạng thái</th>
-            </tr>
-          </thead>
-          <tbody>
-            {orders.map((order) => (
-              <tr key={order.id} className="border-t border-[#303030]">
-                <td className="p-2">{order.id}</td>
-                <td className="p-2">{order.orderDate}</td>
-                <td className="p-2">{order.totalAmount}₫</td>
-                <td className="p-2">{order.status}</td>
+    <div className="min-h-screen bg-[#181c24] p-6">
+      <div className="max-w-3xl mx-auto bg-[#23283a] rounded-lg shadow-lg p-6">
+        <h2 className="text-2xl font-bold mb-6 text-[#00b4ff]">Lịch sử đơn hàng</h2>
+        {isLoading ? (
+          <p className="text-white">Đang tải...</p>
+        ) : isError ? (
+          <p className="text-red-400">Lỗi khi tải đơn hàng</p>
+        ) : orders.length === 0 ? (
+          <p className="text-gray-400">Bạn chưa có đơn hàng nào.</p>
+        ) : (
+          <table className="w-full bg-[#23283a] rounded-lg overflow-hidden shadow">
+            <thead>
+              <tr className="bg-[#1a2233] text-[#00b4ff]">
+                <th className="p-3 font-semibold">Mã đơn</th>
+                <th className="p-3 font-semibold">Ngày đặt</th>
+                <th className="p-3 font-semibold">Tổng tiền</th>
+                <th className="p-3 font-semibold">Trạng thái</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
-      )}
+            </thead>
+            <tbody>
+              {orders.map((order) => (
+                <tr
+                  key={order.id}
+                  className="border-t border-[#2c3550] hover:bg-[#28304a] transition"
+                >
+                  <td className="p-3 text-white">{order.id}</td>
+                  <td className="p-3 text-white">{order.orderDate}</td>
+                  <td className="p-3 text-[#00ffae] font-bold">{order.totalAmount}₫</td>
+                  <td className="p-3 text-white">{order.status}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+      </div>
     </div>
   );
 };

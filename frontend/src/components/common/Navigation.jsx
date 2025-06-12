@@ -3,9 +3,6 @@ import { NavLink } from 'react-router-dom';
 
 const Navigation = ({ isMenuOpen, toggleMenu }) => {
   const navItems = [
-    { to: '/', label: 'Trang chủ' },
-    { to: '/cart', label: 'Giỏ hàng' },
-    { to: '/orders', label: 'Đơn hàng' },
   ];
 
   return (

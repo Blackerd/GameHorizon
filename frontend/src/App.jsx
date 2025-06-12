@@ -12,6 +12,7 @@ import Login from './pages/Login.jsx';
 import Register from './pages/Register.jsx';
 import Address from './pages/Address.jsx';
 import UserProfile from './pages/UserProfile.jsx';
+import CategoryList from './pages/CategoryList.jsx';
 
 function App() {
   return (
@@ -29,7 +30,7 @@ function App() {
           <Route path="/register" element={<Register />} />
           <Route path="/address" element={<Address/>} />
           <Route path="/profile" element={<UserProfile/>} />
-          
+          <Route path="/categoryList" element={<CategoryList/>} />
         </Routes>
       </main>
       <Footer />
