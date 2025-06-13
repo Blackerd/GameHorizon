@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useCustomer } from '../context/CustomerContext';
 import { Link, useNavigate } from 'react-router-dom';
 import OrderHistory from './OrderHistory';
+import WishlistGames from '../components/wishlist/WishlistGames';
 
 const UserProfile = () => {
   const { customer } = useCustomer();
@@ -54,6 +55,17 @@ const UserProfile = () => {
           >
             <span role="img" aria-label="orders" className="mr-2">🧾</span>
             Lịch sử đơn hàng
+          </button>
+          <button
+            className={`text-left px-4 py-2 rounded font-semibold transition ${
+              tab === 'wishlist'
+                ? 'bg-[#0078F2] text-white shadow'
+                : 'hover:bg-[#232323] text-gray-200'
+            }`}
+            onClick={() => setTab('wishlist')}
+          >
+            <span role="img" aria-label="wishlist" className="mr-2">⭐</span>
+            Wishlist
           </button>
           {customer.role === true && (
             <button
@@ -108,6 +120,9 @@ const UserProfile = () => {
           <div className="mt-2">
             <OrderHistory />
           </div>
+        )}
+        {tab === 'wishlist' && (
+          <WishlistGames userId={customer?.id} />
         )}
       </main>
     </div>
