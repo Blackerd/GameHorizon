@@ -1,0 +1,193 @@
+import React, { useState, useMemo, useEffect } from 'react';
+import { useProducts } from '../../hooks/useProducts';
+import { useQuery } from '@tanstack/react-query';
+import { getCategories } from '../../api/categoryApi';
+import { useCustomer } from '../../context/CustomerContext';
+import { FaSearch } from 'react-icons/fa';
+
+
+const getWishlist = (userId = 'guest') => {
+  const key = `wishlist_${userId}`;
+  return JSON.parse(localStorage.getItem(key) || '[]');
+};
+
+const setWishlist = (wishlist, userId = 'guest') => {
+  const key = `wishlist_${userId}`;
+  localStorage.setItem(key, JSON.stringify(wishlist));
+};
+
+const HotGamesSection = () => {
+  const { customer } = useCustomer();
+  const userId = customer?.id || 'guest';
+  const { data: products = [] } = useProducts();
+  const { data: categories = [] } = useQuery({
+    queryKey: ['categories'],
+    queryFn: async () => {
+      const res = await getCategories();
+      return res.data || res;
+    }
+  });
+
+  const [activeTab, setActiveTab] = useState('Discover');
+  const [search, setSearch] = useState('');
+  const [selected, setSelected] = useState(0);
+  const [wishlist, setWishlistState] = useState(getWishlist(userId));
+
+  useEffect(() => {
+    setWishlistState(getWishlist(userId));
+  }, [userId]);
+
+  const tabList = categories.length
+    ? categories.map(cat => cat.name)
+    : ['Discover', 'Browse', 'News'];
+
+  const filteredProducts = useMemo(() => {
+    let list = products;
+    if (activeTab && activeTab !== 'Discover') {
+      list = list.filter(p => p.categoryName === activeTab);
+    }
+    if (search) {
+      list = list.filter(p => p.name.toLowerCase().includes(search.toLowerCase()));
+    }
+    return list;
+  }, [products, activeTab, search]);
+
+  const mainProduct = filteredProducts[selected] || filteredProducts[0];
+
+  const handleAddWishlist = (productId) => {
+    if (!wishlist.includes(productId)) {
+      const newWishlist = [...wishlist, productId];
+      setWishlist(newWishlist, userId);
+      setWishlistState(newWishlist);
+    }
+  };
+
+  const handleRemoveWishlist = (productId) => {
+    const newWishlist = wishlist.filter(id => id !== productId);
+    setWishlist(newWishlist, userId);
+    setWishlistState(newWishlist);
+  };
+
+  const isWishlisted = mainProduct && wishlist.includes(mainProduct.id);
+
+  return (
+    <div className="bg-[#121212] min-h-screen">
+      {/* Header with Search and Navigation */}
+      <div className="flex items-center justify-between p-4 mb-2">
+        <div className="relative w-60">
+          <input
+            type="text"
+            placeholder="Search store"
+            className="bg-[#2a2a2a] text-white w-full py-2 pl-10 pr-4 rounded-full focus:outline-none"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
+          <FaSearch className="absolute left-3 top-3 text-gray-400" />
+        </div>
+        
+        <div className="flex space-x-6">
+            {tabList.map((tab) => (
+        <button
+            key={tab}
+            onClick={() => setActiveTab(tab)}
+            className={`text-lg ${activeTab === tab ? 'text-white font-medium' : 'text-gray-400'}`}
+        >
+            {tab}
+        </button>
+        ))}
+        </div>
+        
+        <div className="w-60">
+          {/* Placeholder to balance the layout */}
+        </div>
+      </div>
+      
+      {/* Main Content Area */}
+      <div className="flex px-2 mt-4">
+        {/* Featured Game Banner */}
+        <div className="flex-1 relative overflow-hidden rounded-2xl bg-gradient-to-r from-[#1a1c2e] to-[#23283a]">
+          {mainProduct && (
+            <div className="relative">
+              <div className="absolute top-0 left-0 z-10 p-8 text-white h-full flex flex-col justify-between w-full lg:w-1/2">
+                {mainProduct.categoryName && (
+                  <div className="uppercase text-xs font-bold mb-2 tracking-wider">
+                    NEW SEASON
+                  </div>
+                )}
+                
+                <div className="flex-1 flex flex-col justify-center">
+                  <h1 className="text-5xl font-bold text-white mb-6">
+                    {mainProduct.name}
+                  </h1>
+                  
+                  <p className="mb-6 text-white/80">
+                    Playful Season has arrived! Participate in Playful
+                    Hearts Day's themed events to obtain generous
+                    rewards.
+                  </p>
+                  
+                  <div className="text-white mb-6">
+                    {mainProduct.price === 0 ? 'Free' : mainProduct.price.toLocaleString('vi-VN') + '₫'}
+                  </div>
+                  
+                  <div className="flex gap-4">
+                    <button className="bg-white hover:bg-gray-200 text-black px-8 py-3 rounded-lg font-semibold transition">
+                      Play For Free
+                    </button>
+                    
+                    <button
+                      className="flex items-center gap-2 border-white border px-4 py-3 rounded-lg text-white hover:bg-white/10 transition"
+                      onClick={() => isWishlisted ? handleRemoveWishlist(mainProduct.id) : handleAddWishlist(mainProduct.id)}
+                    >
+                      {isWishlisted ? (
+                        <span className="text-yellow-400">★ Remove from Wishlist</span>
+                      ) : (
+                        <span>+ Add to Wishlist</span>
+                      )}
+                    </button>
+                  </div>
+                </div>
+              </div>
+              
+              {/* Large feature image that covers the right side */}
+              <img 
+                src={mainProduct.img} 
+                alt={mainProduct.name} 
+                className="w-full object-cover h-[450px] object-right" 
+              />
+            </div>
+          )}
+        </div>
+        
+        {/* Game List Sidebar */}
+        <div className="w-72 ml-4 space-y-2">
+          {filteredProducts.map((product, idx) => (
+            <button
+              key={product.id}
+              onClick={() => setSelected(idx)}
+              className={`flex items-center gap-3 p-2 rounded-lg transition w-full text-left ${
+                selected === idx ? 'bg-[#23283a]' : 'hover:bg-[#1a1c2e]'
+              }`}
+            >
+              <img 
+                src={product.img} 
+                alt={product.name} 
+                className="w-16 h-16 object-cover rounded" 
+              />
+              <div className="flex-1">
+                <div className="text-white text-sm font-medium line-clamp-2">
+                  {product.name}
+                </div>
+              </div>
+              {wishlist.includes(product.id) && (
+                <span className="text-yellow-400">★</span>
+              )}
+            </button>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default HotGamesSection;

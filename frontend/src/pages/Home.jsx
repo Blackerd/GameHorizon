@@ -3,8 +3,12 @@ import GameGrid from '../components/product/GameGrid.jsx';
 import Loading from '../components/common/Loading.jsx';
 import { useProducts } from '../hooks/useProducts';
 import CategoryGrid from '../components/category/CategoryGrid.jsx';
+import HotGamesSection from '../components/hotgame/HotGamesSection.jsx';
+import FeaturedProductsSection from '../components/product/FeaturedProductsSection.jsx';
 
-const Home = () => {
+
+const Home = () =>
+{
   const { data: products, isLoading, isError, error } = useProducts();
   const [selectedCategory, setSelectedCategory] = useState(null);
 
@@ -45,9 +49,13 @@ const Home = () => {
 
 return (
     <div className="bg-[#121212] min-h-screen py-8">
-      <div className="container mx-auto px-4">
-        <CategoryGrid />
-        <GameGrid
+    <div className="container mx-auto px-4">
+      <HotGamesSection />
+      {/* <CategoryGrid /> */}
+      <FeaturedProductsSection
+       products={products}
+      />
+        <GameGrid 
           products={products}
           title="Sản phẩm nổi bật"
         />

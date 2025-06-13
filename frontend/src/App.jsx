@@ -13,6 +13,8 @@ import Register from './pages/Register.jsx';
 import Address from './pages/Address.jsx';
 import UserProfile from './pages/UserProfile.jsx';
 import CategoryList from './pages/CategoryList.jsx';
+import OrderManagement from './pages/OrderManagement.jsx';
+
 
 function App() {
   return (
@@ -31,6 +33,7 @@ function App() {
           <Route path="/address" element={<Address/>} />
           <Route path="/profile" element={<UserProfile/>} />
           <Route path="/categoryList" element={<CategoryList/>} />
+          <Route path="/admin/orders" element={<OrderManagement />} />
         </Routes>
       </main>
       <Footer />
