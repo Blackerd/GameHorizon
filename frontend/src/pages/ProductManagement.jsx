@@ -4,17 +4,19 @@ import { useProducts } from '../hooks/useProducts';
 import { createProduct, updateProduct, deleteProduct } from '../api/productApi';
 import { uploadImage } from '../api/imageApi';
 import { Trash2, Edit, Plus } from 'lucide-react';
+import { useCategories } from '../hooks/useCategories'; // Thêm dòng này
 
 const ProductManagement = () => {
   const queryClient = useQueryClient();
   const { data: products = [], isLoading, isError, error } = useProducts();
+  const { data: categories = [] } = useCategories(); // Lấy danh mục từ server
   const [searchTerm, setSearchTerm] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState(null);
   const [formData, setFormData] = useState({
     name: '',
     price: '',
-    categoryName: '',
+    categoryId: '', // Đổi thành categoryId
     detail: '',
     img: ''
   });
@@ -44,10 +46,13 @@ const ProductManagement = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
+      // Lấy tên danh mục từ categoryId
+      const selectedCategory = categories.find(cat => cat.id === formData.categoryId);
       const productData = {
         name: formData.name,
         price: parseFloat(formData.price),
-        categoryName: formData.categoryName,
+        categoryId: formData.categoryId,
+        categoryName: selectedCategory ? selectedCategory.name : '',
         detail: formData.detail,
         img: imageUrl || formData.img
       };
@@ -59,7 +64,7 @@ const ProductManagement = () => {
         alert('Tạo sản phẩm thành công');
       }
       queryClient.invalidateQueries(['products']);
-      setFormData({ name: '', price: '', categoryName: '', detail: '', img: '' });
+      setFormData({ name: '', price: '', categoryId: '', detail: '', img: '' });
       setImageUrl('');
       setFile(null);
       setIsModalOpen(false);
@@ -70,11 +75,13 @@ const ProductManagement = () => {
   };
 
   const handleEdit = (product) => {
+    // Tìm categoryId từ categories dựa vào categoryName
+    const foundCategory = categories.find(cat => cat.name === product.categoryName);
     setEditingProduct(product);
     setFormData({
       name: product.name,
       price: product.price,
-      categoryName: product.categoryName,
+      categoryId: foundCategory ? foundCategory.id : '',
       detail: product.detail,
       img: product.img
     });
@@ -101,7 +108,7 @@ const ProductManagement = () => {
           onClick={() => {
             setIsModalOpen(true);
             setEditingProduct(null);
-            setFormData({ name: '', price: '', categoryName: '', detail: '', img: '' });
+            setFormData({ name: '', price: '', categoryId: '', detail: '', img: '' });
             setImageUrl('');
             setFile(null);
           }}
@@ -197,14 +204,21 @@ const ProductManagement = () => {
                 className="w-full p-2 mb-4 bg-[#303030] rounded text-white"
                 required
               />
-              <input
-                name="categoryName"
-                value={formData.categoryName}
+              {/* Sử dụng select để chọn danh mục */}
+              <select
+                name="categoryId"
+                value={formData.categoryId}
                 onChange={handleChange}
-                placeholder="Tên danh mục"
                 className="w-full p-2 mb-4 bg-[#303030] rounded text-white"
                 required
-              />
+              >
+                <option value="">-- Chọn danh mục --</option>
+                {categories.map((cat) => (
+                  <option key={cat.id} value={cat.id}>
+                    {cat.name}
+                  </option>
+                ))}
+              </select>
               <textarea
                 name="detail"
                 value={formData.detail}
@@ -224,7 +238,7 @@ const ProductManagement = () => {
                   onClick={() => {
                     setIsModalOpen(false);
                     setEditingProduct(null);
-                    setFormData({ name: '', price: '', categoryName: '', detail: '', img: '' });
+                    setFormData({ name: '', price: '', categoryId: '', detail: '', img: '' });
                     setImageUrl('');
                     setFile(null);
                   }}

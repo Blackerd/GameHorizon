@@ -3,6 +3,7 @@ import { useCustomer } from '../context/CustomerContext';
 import { Link, useNavigate } from 'react-router-dom';
 import OrderHistory from './OrderHistory';
 import WishlistGames from '../components/wishlist/WishlistGames';
+import AddressManager from './AddressManager';
 
 const UserProfile = () => {
   const { customer } = useCustomer();
@@ -106,15 +107,7 @@ const UserProfile = () => {
           </>
         )}
         {tab === 'address' && (
-          <div>
-            <h2 className="text-2xl font-bold mb-8 text-[#00b4ff]">Quản lý địa chỉ</h2>
-            <Link
-              to="/address"
-              className="inline-block bg-[#0078F2] text-white px-6 py-2 rounded-lg hover:bg-[#0060c7] transition font-semibold shadow"
-            >
-              Xem và chỉnh sửa địa chỉ
-            </Link>
-          </div>
+          <AddressManager />
         )}
         {tab === 'orders' && (
           <div className="mt-2">
