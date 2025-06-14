@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import GameGrid from '../components/product/GameGrid.jsx';
 import Loading from '../components/common/Loading.jsx';
 import { useProducts } from '../hooks/useProducts';
-import CategoryGrid from '../components/category/CategoryGrid.jsx';
 import HotGamesSection from '../components/hotgame/HotGamesSection.jsx';
 import FeaturedProductsSection from '../components/product/FeaturedProductsSection.jsx';
 

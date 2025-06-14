@@ -43,37 +43,35 @@ const ProductManagement = () => {
 
   const handleChange = (e) => setFormData({ ...formData, [e.target.name]: e.target.value });
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    try {
-      // Lấy tên danh mục từ categoryId
-      const selectedCategory = categories.find(cat => cat.id === formData.categoryId);
-      const productData = {
-        name: formData.name,
-        price: parseFloat(formData.price),
-        categoryId: formData.categoryId,
-        categoryName: selectedCategory ? selectedCategory.name : '',
-        detail: formData.detail,
-        img: imageUrl || formData.img
-      };
-      if (editingProduct) {
-        await updateProduct(editingProduct.id, productData);
-        alert('Cập nhật sản phẩm thành công');
-      } else {
-        await createProduct(productData);
-        alert('Tạo sản phẩm thành công');
-      }
-      queryClient.invalidateQueries(['products']);
-      setFormData({ name: '', price: '', categoryId: '', detail: '', img: '' });
-      setImageUrl('');
-      setFile(null);
-      setIsModalOpen(false);
-      setEditingProduct(null);
-    } catch {
-      alert('Lỗi: Không thể lưu sản phẩm');
-    }
-  };
-
+const handleSubmit = async (e) => {
+  e.preventDefault();
+const selectedCategory = categories.find(cat => String(cat.id) === String(formData.categoryId));
+const productData = {
+  name: formData.name,
+  price: parseFloat(formData.price),
+  categoryName: selectedCategory ? selectedCategory.name : '', // Phải có name
+  detail: formData.detail,
+  img: imageUrl || formData.img
+};
+if (!selectedCategory) {
+  alert('Bạn phải chọn danh mục!');
+  return;
+};
+  if (editingProduct) {
+    await updateProduct(editingProduct.id, productData);
+    alert('Cập nhật sản phẩm thành công');
+     } else {
+      console.log('productData gửi lên:', productData);
+    await createProduct(productData);
+    alert('Tạo sản phẩm thành công');
+  }
+  queryClient.invalidateQueries(['products']);
+  setFormData({ name: '', price: '', categoryId: '', detail: '', img: '' });
+  setImageUrl('');
+  setFile(null);
+  setIsModalOpen(false);
+  setEditingProduct(null);
+};
   const handleEdit = (product) => {
     // Tìm categoryId từ categories dựa vào categoryName
     const foundCategory = categories.find(cat => cat.name === product.categoryName);

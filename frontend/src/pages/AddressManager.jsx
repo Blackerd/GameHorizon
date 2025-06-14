@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import {
   getAddressesByCustomer,
   createAddress,
@@ -7,11 +7,26 @@ import {
   deleteAddress,
 } from '../api/addressApi';
 import { useCustomer } from '../context/CustomerContext';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 
 const AddressManager = () => {
   const { customer } = useCustomer();
-  const [addresses, setAddresses] = useState([]);
-  const [defaultAddress, setDefaultAddressState] = useState(null);
+  const queryClient = useQueryClient();
+
+  // Lấy danh sách địa chỉ
+  const { data: addresses = [], isLoading, isError } = useQuery({
+    queryKey: ['addresses', customer?.id],
+    queryFn: () => getAddressesByCustomer(customer.id).then(res => res.data),
+    enabled: !!customer,
+  });
+
+  // Lấy địa chỉ mặc định
+  const { data: defaultAddress } = useQuery({
+    queryKey: ['defaultAddress', customer?.id],
+    queryFn: () => getDefaultAddress(customer.id).then(res => res.data),
+    enabled: !!customer,
+  });
+
   const [form, setForm] = useState({
     receiver: '',
     numberPhone: '',
@@ -20,36 +35,47 @@ const AddressManager = () => {
   });
   const [showForm, setShowForm] = useState(false);
 
-  const fetchAddresses = async () => {
-    if (!customer) return;
-    const res = await getAddressesByCustomer(customer.id);
-    setAddresses(res.data || []);
-    const def = await getDefaultAddress(customer.id);
-    setDefaultAddressState(def.data || null);
-  };
+  // Thêm địa chỉ mới
+  const addMutation = useMutation({
+    mutationFn: (data) => createAddress(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries(['addresses', customer.id]);
+      queryClient.invalidateQueries(['defaultAddress', customer.id]);
+    }
+  });
 
-  useEffect(() => {
-    fetchAddresses();
-    // eslint-disable-next-line
-  }, [customer]);
+  // Đặt mặc định
+  const setDefaultMutation = useMutation({
+    mutationFn: (addressId) => setDefaultAddress(customer.id, addressId),
+    onSuccess: () => {
+      queryClient.invalidateQueries(['addresses', customer.id]);
+      queryClient.invalidateQueries(['defaultAddress', customer.id]);
+    }
+  });
+
+  // Xóa địa chỉ
+  const deleteMutation = useMutation({
+    mutationFn: (addressId) => deleteAddress(addressId),
+    onSuccess: () => {
+      queryClient.invalidateQueries(['addresses', customer.id]);
+      queryClient.invalidateQueries(['defaultAddress', customer.id]);
+    }
+  });
 
   const handleAdd = async (e) => {
     e.preventDefault();
-    await createAddress({ ...form, customerId: customer.id });
+    await addMutation.mutateAsync({ ...form, customerId: customer.id });
     setForm({ receiver: '', numberPhone: '', address: '', note: '' });
     setShowForm(false);
-    fetchAddresses();
   };
 
   const handleSetDefault = async (addressId) => {
-    await setDefaultAddress(customer.id, addressId);
-    fetchAddresses();
+    await setDefaultMutation.mutateAsync(addressId);
   };
 
   const handleDelete = async (addressId) => {
     if (window.confirm('Bạn chắc chắn muốn xóa địa chỉ này?')) {
-      await deleteAddress(addressId);
-      fetchAddresses();
+      await deleteMutation.mutateAsync(addressId);
     }
   };
 
@@ -108,14 +134,19 @@ const AddressManager = () => {
             <button
               type="submit"
               className="bg-[#0078F2] text-white px-4 py-2 rounded hover:bg-[#0060c7]"
+              disabled={addMutation.isLoading}
             >
-              Lưu địa chỉ
+              {addMutation.isLoading ? 'Đang lưu...' : 'Lưu địa chỉ'}
             </button>
           </div>
         </form>
       )}
       <div>
-        {addresses.length === 0 ? (
+        {isLoading ? (
+          <div className="text-center text-gray-400">Đang tải địa chỉ...</div>
+        ) : isError ? (
+          <div className="text-center text-red-500">Lỗi khi tải địa chỉ.</div>
+        ) : addresses.length === 0 ? (
           <div className="text-center text-gray-400">Bạn chưa có địa chỉ nào.</div>
         ) : (
           <div className="bg-[#202020] rounded-lg shadow">
@@ -149,6 +180,7 @@ const AddressManager = () => {
                         <button
                           onClick={() => handleSetDefault(addr.id)}
                           className="text-[#0078F2] hover:underline"
+                          disabled={setDefaultMutation.isLoading}
                         >
                           Đặt mặc định
                         </button>
@@ -156,6 +188,7 @@ const AddressManager = () => {
                       <button
                         onClick={() => handleDelete(addr.id)}
                         className="text-red-500 hover:underline"
+                        disabled={deleteMutation.isLoading}
                       >
                         Xóa
                       </button>
