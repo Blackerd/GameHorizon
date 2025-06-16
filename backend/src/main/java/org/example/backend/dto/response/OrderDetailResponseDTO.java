@@ -12,4 +12,5 @@ public class OrderDetailResponseDTO {
     private Integer orderId;
     private ProductResponseDTO productResponseDTO;
     private Integer quantity;
+     private String activationKey; 
 }

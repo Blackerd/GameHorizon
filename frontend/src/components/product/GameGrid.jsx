@@ -13,13 +13,6 @@ const GameGrid = ({ products, title }) => {
       <div className="container mx-auto px-4">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6">
           <h2 className="text-white text-2xl font-bold mb-4 sm:mb-0">{title}</h2>
-          {/* <input
-            type="text"
-            placeholder="Tìm kiếm sản phẩm..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="bg-[#303030] text-white px-3 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-[#0078F2]"
-          /> */}
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">

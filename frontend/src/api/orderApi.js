@@ -31,3 +31,7 @@ export const getOrderRevenue = () =>
 // Lấy đơn hàng theo trạng thái và customerId (client)
 export const getOrdersByStatusAndCustomerId = (status, customerId) =>
   axiosInstance.get(`/order/client/${status}&&${customerId}`).then(res => res.data);
+
+// Lấy thư viện game của khách hàng
+export const getLibrary = (customerId) =>
+  axiosInstance.get(`/order/library/${customerId}`).then(res => res.data);

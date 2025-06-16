@@ -4,6 +4,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import OrderHistory from './OrderHistory';
 import WishlistGames from '../components/wishlist/WishlistGames';
 import AddressManager from './AddressManager';
+import Library from './Library';
 
 const UserProfile = () => {
   const { customer } = useCustomer();
@@ -68,6 +69,17 @@ const UserProfile = () => {
             <span role="img" aria-label="wishlist" className="mr-2">⭐</span>
             Wishlist
           </button>
+          <button
+            className={`text-left px-4 py-2 rounded font-semibold transition ${
+              tab === 'library'
+                ? 'bg-[#0078F2] text-white shadow'
+                : 'hover:bg-[#232323] text-gray-200'
+            }`}
+            onClick={() => setTab('library')}
+          >
+            <span role="img" aria-label="library" className="mr-2">🎮</span>
+            Thư viện game
+          </button>
           {customer.role === true && (
             <button
               className="text-left px-4 py-2 rounded font-semibold transition bg-[#ffb300] text-black hover:bg-[#ffe082] mt-2"
@@ -77,6 +89,7 @@ const UserProfile = () => {
               Quản trị
             </button>
           )}
+
         </nav>
       </aside>
       {/* Main content */}
@@ -116,6 +129,9 @@ const UserProfile = () => {
         )}
         {tab === 'wishlist' && (
           <WishlistGames userId={customer?.id} />
+        )}
+          {tab === 'library' && (
+          <Library customerId={customer?.id} />
         )}
       </main>
     </div>

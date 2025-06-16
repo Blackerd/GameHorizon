@@ -14,12 +14,31 @@ import Address from './pages/Address.jsx';
 import UserProfile from './pages/UserProfile.jsx';
 import CategoryList from './pages/CategoryList.jsx';
 import OrderManagement from './pages/OrderManagement.jsx';
-
+import { Toaster } from 'react-hot-toast'; // Thêm dòng này
 
 function App() {
   return (
     <div className="min-h-screen flex flex-col bg-[#121212]">
       <Header />
+      {/* Thêm Toaster ở đây */}
+      <Toaster
+        position="top-center"
+        toastOptions={{
+          style: {
+            background: '#23283a',
+            color: '#fff',
+            fontWeight: 'bold',
+            fontSize: '1rem',
+            border: '2px solid #00b4ff',
+            borderRadius: '12px',
+            boxShadow: '0 4px 24px #000a',
+          },
+          iconTheme: {
+            primary: '#00b4ff',
+            secondary: '#fff',
+          },
+        }}
+      />
       <main className="flex-1">
         <Routes>
           <Route path="/" element={<Home />} />

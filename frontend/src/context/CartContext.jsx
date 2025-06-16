@@ -15,38 +15,43 @@ export const CartProvider = ({ children }) => {
   const { customer } = useCustomer();
 
   // Lấy giỏ hàng khi user đăng nhập hoặc thay đổi
-const fetchCart = async () => {
-  if (!customer) {
-    setCart([]);
-    return;
-  }
-  try {
-    const { data } = await getCart(customer.id);
-    // Sửa dòng này:
-    setCart(Array.isArray(data.cartItems) ? data.cartItems : []);
-  } catch (error) {
-    setCart([]);
-    console.error('Lỗi lấy giỏ hàng:', error);
-  }
-};
+  const fetchCart = async () => {
+    if (!customer) {
+      setCart([]);
+      return;
+    }
+    try {
+      const { data } = await getCart(customer.id);
+      setCart(Array.isArray(data.cartItems) ? data.cartItems : []);
+    } catch (error) {
+      setCart([]);
+      console.error('Lỗi lấy giỏ hàng:', error);
+    }
+  };
 
   useEffect(() => {
     fetchCart();
+    // eslint-disable-next-line
   }, [customer]);
 
-  // Thêm sản phẩm vào giỏ hàng
+  // Kiểm tra sản phẩm đã có trong giỏ hàng chưa
+  const isInCart = (productId) => cart.some((item) => item.productId === productId);
+
+  // Thêm sản phẩm vào giỏ hàng (không cho phép trùng)
   const addToCart = async (product) => {
     if (!customer) {
       alert('Vui lòng đăng nhập để thêm sản phẩm vào giỏ hàng');
       return;
     }
-    if (!isInCart(product.id)) {
-      try {
-        await addCartItem({ cartId: customer.cartId, productId: product.id, quantity: 1 });
-        await fetchCart(); // Cập nhật lại giỏ hàng sau khi thêm
-      } catch (error) {
-        console.error('Lỗi thêm vào giỏ hàng:', error);
-      }
+    if (isInCart(product.id)) {
+      // Có thể hiện toast hoặc thông báo ở đây nếu muốn
+      return;
+    }
+    try {
+      await addCartItem({ cartId: customer.cartId, productId: product.id, quantity: 1 });
+      await fetchCart(); // Cập nhật lại giỏ hàng sau khi thêm
+    } catch (error) {
+      console.error('Lỗi thêm vào giỏ hàng:', error);
     }
   };
 
@@ -71,11 +76,16 @@ const fetchCart = async () => {
     }
   };
 
-  // Kiểm tra sản phẩm đã có trong giỏ hàng chưa
-  const isInCart = (id) => cart.some((item) => item.productId === id);
-
   return (
-    <CartContext.Provider value={{ cart, addToCart, removeFromCart, clearCart: clearCartItems, isInCart }}>
+    <CartContext.Provider
+      value={{
+        cart,
+        addToCart,
+        removeFromCart,
+        clearCart: clearCartItems,
+        isInCart,
+      }}
+    >
       {children}
     </CartContext.Provider>
   );

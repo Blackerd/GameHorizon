@@ -4,6 +4,7 @@ package org.example.backend.service;
 import org.example.backend.dto.request.OrderEditRequestDTO;
 import org.example.backend.dto.request.OrderRequestDTO;
 import org.example.backend.dto.response.MonthlyRevenueResponse;
+import org.example.backend.dto.response.OrderDetailResponseDTO;
 import org.example.backend.dto.response.OrderResponseDTO;
 
 import java.util.List;
@@ -30,4 +31,6 @@ public interface OrderService {
     void changeOrderStatus(int orderId, String status);
 
     List<OrderResponseDTO> getOrdersByStatusAndCustomerId(String status, int customerId);
+
+    List<OrderDetailResponseDTO> getLibraryByCustomerId(int customerId);
 }

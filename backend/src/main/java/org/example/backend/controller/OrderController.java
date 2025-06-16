@@ -7,6 +7,7 @@ import org.example.backend.common.OrderStatus;
 import org.example.backend.dto.request.OrderEditRequestDTO;
 import org.example.backend.dto.request.OrderRequestDTO;
 import org.example.backend.dto.response.MonthlyRevenueResponse;
+import org.example.backend.dto.response.OrderDetailResponseDTO;
 import org.example.backend.dto.response.OrderResponseDTO;
 import org.example.backend.service.OrderService;
 import org.springframework.http.HttpStatus;
@@ -77,5 +78,9 @@ public class OrderController {
     public List<OrderResponseDTO> getOrderByStatusAndCustomerId(@PathVariable String status,
             @PathVariable int customerId) {
         return orderService.getOrdersByStatusAndCustomerId(status, customerId);
+    }
+    @GetMapping("/library/{customerId}")
+    public List<OrderDetailResponseDTO> getLibrary(@PathVariable int customerId) {
+        return orderService.getLibraryByCustomerId(customerId);
     }
 }

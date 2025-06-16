@@ -29,6 +29,9 @@ public class OrderDetail {
     @JoinColumn(name = "product_id", nullable = false)
     private Product product;
 
+    private String activationKey;
+
+
     private Integer quantity;
 
     @Override
