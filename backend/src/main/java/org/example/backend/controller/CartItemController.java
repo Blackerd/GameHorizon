@@ -18,11 +18,6 @@ public class CartItemController {
         return cartItemService.saveCartItem(cartItemRequestDTO);
     }
 
-    @PutMapping("/updatequantity/{cartItemId}")
-    public void updateCartItem(@PathVariable("cartItemId") int cartItemId, @RequestParam int quantity) {
-        cartItemService.updateCartItemQuantity(cartItemId, quantity);
-    }
-
     @DeleteMapping("/{cartItemId}")
     public void deleteCartItem(@PathVariable("cartItemId") int cartItemId) {
         cartItemService.deleteCartItem(cartItemId);

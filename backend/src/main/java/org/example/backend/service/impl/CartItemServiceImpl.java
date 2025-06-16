@@ -20,37 +20,30 @@ public class CartItemServiceImpl implements CartItemService {
     private final CartServiceImpl cartServiceImpl;
     private final ProductServiceImpl productServiceImpl;
 
-    @Override
-    public int saveCartItem(CartItemRequestDTO cartItem) {
-        int cartId = cartItem.getCartId();
-        int productId = cartItem.getProductId();
+   @Override
+public int saveCartItem(CartItemRequestDTO cartItem) {
+    int cartId = cartItem.getCartId();
+    int productId = cartItem.getProductId();
 
-        // Tìm CartItem dựa trên cartId và productId
-        CartItem existingCartItem = cartItemRepository.findByCartIdAndProductId(cartId, productId);
+    CartItem existingCartItem = cartItemRepository.findByCartIdAndProductId(cartId, productId);
 
-        if (existingCartItem != null) {
-            // Nếu sản phẩm đã tồn tại trong giỏ hàng, cập nhật số lượng sản phẩm
-            existingCartItem.setQuantity(existingCartItem.getQuantity() + cartItem.getQuantity());
-            cartItemRepository.save(existingCartItem);
-            return existingCartItem.getId();
-        } else {
-            // Nếu sản phẩm chưa tồn tại trong giỏ hàng, tạo mới CartItem
-            CartItem newCartItem = CartItem.builder()
-                    .cart(cartServiceImpl.getByCartId(cartId))
-                    .quantity(cartItem.getQuantity())
-                    .product(productServiceImpl.getById(productId))
-                    .build();
-            return cartItemRepository.save(newCartItem).getId();
-        }
+    if (existingCartItem != null) {
+        // Đã có game này trong cart, không cho thêm nữa (không tăng số lượng)
+        return existingCartItem.getId();
+    } else {
+        CartItem newCartItem = CartItem.builder()
+                .cart(cartServiceImpl.getByCartId(cartId))
+                .product(productServiceImpl.getById(productId))
+                .build();
+        return cartItemRepository.save(newCartItem).getId();
     }
-
+}
     @Override
     public CartItemResponseDTO getCartItem(int cartItemId) {
         CartItem cartItem = getByCartId(cartItemId);
         return CartItemResponseDTO.builder()
                 .id(cartItem.getId())
                 .product(productServiceImpl.getProductById(cartItem.getProduct().getId()))
-                .quantity(cartItem.getQuantity())
                 .build();
     }
 
@@ -58,25 +51,7 @@ public class CartItemServiceImpl implements CartItemService {
     public void deleteCartItem(int cartItemId) {
         cartItemRepository.deleteById(cartItemId);
     }
-
-    @Override
-    public void updateCartItem(int id, CartItemRequestDTO cartItem) {
-        CartItem cartI = getByCartId(id);
-        cartI.setQuantity(cartItem.getQuantity());
-        cartItemRepository.save(cartI);
-    }
-
-    @Override
-    public void updateCartItemQuantity(int cartItemId, int quantity) {
-        CartItem cartI = getByCartId(cartItemId);
-        cartI.setQuantity(cartI.getQuantity() + quantity);
-        if (cartI.getQuantity() <= 0) {
-            cartItemRepository.delete(cartI);
-        } else {
-            cartItemRepository.save(cartI);
-        }
-
-    }
+ 
 
     @Override
     public void deleteCartItemByCartId(int cartId) {
@@ -92,7 +67,6 @@ public class CartItemServiceImpl implements CartItemService {
         return cartItems.stream().map(cartItem -> CartItemResponseDTO.builder()
                 .id(cartItem.getId())
                 .product(productServiceImpl.getProductById(cartItem.getProduct().getId()))
-                .quantity(cartItem.getQuantity())
                 .build()).collect(Collectors.toList());
     }
 }

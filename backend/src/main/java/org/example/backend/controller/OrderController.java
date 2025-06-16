@@ -83,4 +83,13 @@ public class OrderController {
     public List<OrderDetailResponseDTO> getLibrary(@PathVariable int customerId) {
         return orderService.getLibraryByCustomerId(customerId);
     }
+    @GetMapping("/history/{customerId}")
+    public List<OrderResponseDTO> getOrderHistory(
+        @PathVariable int customerId,
+        @RequestParam(defaultValue = "0") int page,
+        @RequestParam(defaultValue = "10") int size
+    ) {
+        // Triển khai phân trang ở service/repository
+        return orderService.getOrderHistory(customerId, page, size);
+    }
 }

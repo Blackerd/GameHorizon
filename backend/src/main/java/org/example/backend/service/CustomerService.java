@@ -31,7 +31,5 @@ public interface CustomerService {
 
     void initPasswordReset(String username);
 
-    int getQuantityByCustomerId(int customerId);
-
     void changePassword(int customerId, String oldPassword, String newPassword);
 }

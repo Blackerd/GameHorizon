@@ -30,24 +30,24 @@ public class CartServiceImpl implements CartService {
         return cartRepository.save(cart).getId();
     }
 
-    @Override
-    public CartResponseDTO getCart(int cartId) {
-        Cart cart = getByCartId(cartId);
-        if (cart == null) {
-            return null; // Or throw an exception if preferred
-        }
-
-        List<CartItemResponseDTO> cartItemResponseDTOs = cart.getCartItems().stream()
-                .map(this::convertToCartItemResponseDTO)
-                .collect(Collectors.toList());
-
-        return CartResponseDTO.builder()
-                .id(cart.getId())
-                .customerId(cart.getCustomer().getId())
-                .cartItems(cartItemResponseDTOs)
-                .build();
+   // ...existing code...
+public CartResponseDTO getCart(int cartId) {
+    Cart cart = getByCartId(cartId);
+    if (cart == null) return null;
+    List<CartItemResponseDTO> cartItemResponseDTOs = cart.getCartItems().stream()
+        .map(this::convertToCartItemResponseDTO)
+        .collect(Collectors.toList());
+    float totalPrice = 0;
+    for (CartItemResponseDTO item : cartItemResponseDTOs) {
+        totalPrice += item.getProduct().getPrice();
     }
-
+    return CartResponseDTO.builder()
+        .id(cart.getId())
+        .customerId(cart.getCustomer().getId())
+        .cartItems(cartItemResponseDTOs)
+        .totalPrice(totalPrice)
+        .build();
+}
     public Cart getByCartId(int cartId) {
         return cartRepository.findById(cartId).orElse(null);
     }
@@ -56,7 +56,6 @@ public class CartServiceImpl implements CartService {
         return CartItemResponseDTO.builder()
                 .id(cartItem.getId())
                 .product(productServiceImpl.getProductById(cartItem.getProduct().getId()))
-                .quantity(cartItem.getQuantity())
                 .build();
     }
 
@@ -82,15 +81,5 @@ public class CartServiceImpl implements CartService {
         return cartRepository.findByCustomerId(customerId).orElse(null);
     }
 
-    public int getQuantityCartItemInCart(int cartId) {
-        Cart cart = getByCartId(cartId);
-        if (cart == null) {
-            return 0;
-        }
-
-        return cart.getCartItems().stream()
-                .mapToInt(CartItem::getQuantity)
-                .sum();
-    }
 
 }

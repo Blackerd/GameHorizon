@@ -30,7 +30,6 @@ public class OrderDetailServiceImpl implements OrderDetailService {
                 orderDetailRepository.save(OrderDetail.builder()
                                 .order(order)
                                 .product(product)
-                                .quantity(requestDTO.getQuantity())
                                 .build());
 
                 return OrderDetailResponseDTO.builder()
@@ -42,7 +41,6 @@ public class OrderDetailServiceImpl implements OrderDetailService {
                                                 .categoryName(product.getCategory().getName())
                                                 .price(product.getPrice())
                                                 .build())
-                                .quantity(requestDTO.getQuantity())
                                 .build();
         }
 
@@ -53,7 +51,6 @@ public class OrderDetailServiceImpl implements OrderDetailService {
                 Product product = productRepository.findById(requestDTO.getProductId()).orElse(null);
                 orderDetail.setOrder(order);
                 orderDetail.setProduct(product);
-                orderDetail.setQuantity(requestDTO.getQuantity());
                 return OrderDetailResponseDTO.builder()
                                 .orderId(order.getId())
                                 .productResponseDTO(ProductResponseDTO.builder()
@@ -63,7 +60,6 @@ public class OrderDetailServiceImpl implements OrderDetailService {
                                                 .categoryName(product.getCategory().getName())
                                                 .price(product.getPrice())
                                                 .build())
-                                .quantity(requestDTO.getQuantity())
                                 .build();
         }
 
@@ -85,7 +81,6 @@ public class OrderDetailServiceImpl implements OrderDetailService {
                                                 .price(product.getPrice())
                                                 .build())
                                 .orderId(orderDetail.getOrder().getId())
-                                .quantity(orderDetail.getQuantity())
                                 .build();
         }
 
@@ -105,7 +100,6 @@ public class OrderDetailServiceImpl implements OrderDetailService {
                                                                 .name(orderDetail.getProduct().getName())
                                                                 .img(orderDetail.getProduct().getImg())
                                                                 .build())
-                                                .quantity(orderDetail.getQuantity())
                                                 .build())
                                 .collect(Collectors.toList());
         }
@@ -122,7 +116,6 @@ public class OrderDetailServiceImpl implements OrderDetailService {
                                                 .name(orderDetail.getProduct().getName())
                                                 .img(orderDetail.getProduct().getImg())
                                                 .build())
-                                .quantity(orderDetail.getQuantity())
                                 .build();
         }
 }

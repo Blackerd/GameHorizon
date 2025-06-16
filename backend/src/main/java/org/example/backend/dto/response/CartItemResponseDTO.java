@@ -8,5 +8,4 @@ import lombok.Getter;
 public class CartItemResponseDTO {
     private int id;
     private ProductResponseDTO product;
-    private int quantity;
 }

@@ -11,10 +11,6 @@ public interface CartItemService {
 
     void deleteCartItem(int cartItemId);
 
-    void updateCartItem(int id, CartItemRequestDTO cartItem);
-
-    void updateCartItemQuantity(int cartItemId, int quantity);
-
     void deleteCartItemByCartId(int cartId);
 
 }
