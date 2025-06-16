@@ -6,6 +6,10 @@ import org.example.backend.dto.request.CartRequestDTO;
 import org.example.backend.dto.response.CartResponseDTO;
 import org.example.backend.service.CartService;
 import org.springframework.web.bind.annotation.*;
+import org.example.backend.model.Cart;
+import org.example.backend.service.CartItemService;
+import org.example.backend.service.impl.CartItemServiceImpl;
+import org.example.backend.service.impl.CartServiceImpl;
 
 @RestController
 @RequestMapping("/api/cart")
@@ -13,6 +17,9 @@ import org.springframework.web.bind.annotation.*;
 @Tag(name = "Cart", description = "Cart API")
 public class CartController {
     private final CartService cartService;
+
+
+    private final CartItemService cartItemService;    
 
     @PostMapping
     public int saveCart(@RequestBody CartRequestDTO cartRequestDTO) {
@@ -24,9 +31,12 @@ public class CartController {
         return cartService.getCartByCustomerId(customerId);
     }
 
-    @GetMapping("/quantity/{cartId}")
-    public int getCart(@PathVariable int cartId) {
-        return cartService.getQuantityCartItemInCart(cartId);
+    @DeleteMapping("/clear/{customerId}")
+    public void clearCart(@PathVariable int customerId) {
+        Cart cart = cartService.getByCustomerId(customerId);
+        if (cart != null) {
+            cartItemService.deleteCartItemByCartId(cart.getId());
+        }
     }
 
 }

@@ -32,5 +32,7 @@ public interface OrderService {
 
     List<OrderResponseDTO> getOrdersByStatusAndCustomerId(String status, int customerId);
 
+   
+   List<OrderResponseDTO> getOrderHistory(int customerId, int page, int size);
     List<OrderDetailResponseDTO> getLibraryByCustomerId(int customerId);
 }

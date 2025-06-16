@@ -17,6 +17,7 @@ import org.example.backend.repository.CustomerRepository;
 import org.example.backend.repository.OrderRepository;
 import org.example.backend.service.OrderService;
 import org.springframework.stereotype.Service;
+import org.example.backend.model.Customer;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -45,41 +46,45 @@ public class OrderServiceImpl implements OrderService {
      * @return id đơn hàng vừa tạo
      */
     @Override
-    public int saveOrder(OrderRequestDTO orderRequestDTO) {
-        // Kiểm tra khách hàng tồn tại
-        if (customerRepository.findById(orderRequestDTO.getCustomerId()).isEmpty()) {
-            throw new IllegalArgumentException("Customer not found with ID: " + orderRequestDTO.getCustomerId());
-        }
+public int saveOrder(OrderRequestDTO orderRequestDTO) {
+    // Kiểm tra khách hàng tồn tại
+    Customer customer = customerRepository.findById(orderRequestDTO.getCustomerId())
+        .orElseThrow(() -> new IllegalArgumentException("Customer not found with ID: " + orderRequestDTO.getCustomerId()));
 
-        // Tạo danh sách OrderDetail, mỗi game 1 key
-        List<OrderDetail> orderDetails = orderRequestDTO.getOrderDetails().stream()
-                .map(this::convertToOrderDetailEntityWithKey)
-                .collect(Collectors.toList());
+    // Lấy danh sách game đã sở hữu
+    List<Integer> ownedGameIds = getLibraryByCustomerId(customer.getId())
+        .stream().map(dto -> dto.getProductResponseDTO().getId()).collect(Collectors.toList());
 
-        // Tạo đối tượng Order
-        Order order = Order.builder()
-                .customer(customerRepository.findById(orderRequestDTO.getCustomerId()).orElse(null))
-                .orderDate(LocalDateTime.now())
-                .totalAmount(orderRequestDTO.getTotalAmount())
-                .address(orderRequestDTO.getAddress())
-                .numberPhone(orderRequestDTO.getNumberPhone())
-                .receiver(orderRequestDTO.getReceiver())
-                .status(OrderStatus.COMPLETED.getValue()) // Đơn hàng digital luôn hoàn thành khi thanh toán xong
-                .paymentMethod(orderRequestDTO.getPaymentMethod())
-                .orderDetails(orderDetails)
-                .build();
+    // Lọc các game chưa sở hữu để tạo order
+    List<OrderDetail> orderDetails = orderRequestDTO.getOrderDetails().stream()
+        .filter(dto -> !ownedGameIds.contains(dto.getProductId()))
+        .map(this::convertToOrderDetailEntityWithKey)
+        .collect(Collectors.toList());
 
-        // Gán order cho từng orderDetail
-        order.getOrderDetails().forEach(orderDetail -> orderDetail.setOrder(order));
-
-        // Lưu đơn hàng vào DB
-        int orderId = orderRepository.save(order).getId();
-
-        // Gửi email xác nhận kèm key cho user
-        sendPurchaseConfirmationEmail(order);
-
-        return orderId;
+    if (orderDetails.isEmpty()) {
+        throw new IllegalArgumentException("Tất cả game trong đơn hàng đã sở hữu.");
     }
+
+    // Tạo đối tượng Order
+    Order order = Order.builder()
+            .customer(customer)
+            .orderDate(LocalDateTime.now())
+            .totalAmount(orderRequestDTO.getTotalAmount())
+            .address(orderRequestDTO.getAddress())
+            .numberPhone(orderRequestDTO.getNumberPhone())
+            .receiver(orderRequestDTO.getReceiver())
+            .status(OrderStatus.COMPLETED.getValue())
+            .paymentMethod(orderRequestDTO.getPaymentMethod())
+            .orderDetails(orderDetails)
+            .build();
+
+    order.getOrderDetails().forEach(orderDetail -> orderDetail.setOrder(order));
+    int orderId = orderRepository.save(order).getId();
+
+    sendPurchaseConfirmationEmail(order);
+
+    return orderId;
+}
 
     /**
      * Chuyển DTO sang entity OrderDetail, đồng thời sinh key cho từng game.
@@ -87,7 +92,6 @@ public class OrderServiceImpl implements OrderService {
     private OrderDetail convertToOrderDetailEntityWithKey(OrderDetailRequestDTO dto) {
         return OrderDetail.builder()
                 .product(productService.getById(dto.getProductId()))
-                .quantity(dto.getQuantity())
                 .activationKey(generateActivationKey())
                 .build();
     }
@@ -112,7 +116,6 @@ public class OrderServiceImpl implements OrderService {
                 Product product = detail.getProduct();
                 emailContent.append("<li>")
                         .append(product.getName())
-                        .append(" - Số lượng: ").append(detail.getQuantity())
                         .append(" - Giá: ").append(product.getPrice()).append(" VND")
                         .append(" - <b>Key:</b> ").append(detail.getActivationKey())
                         .append("</li>");
@@ -330,7 +333,6 @@ public class OrderServiceImpl implements OrderService {
                 .id(orderDetail.getId())
                 .orderId(orderDetail.getOrder().getId())
                 .productResponseDTO(productService.getProductById(orderDetail.getProduct().getId()))
-                .quantity(orderDetail.getQuantity())
                 .activationKey(orderDetail.getActivationKey()) // Trả về key cho client
                 .build();
     }
@@ -341,7 +343,6 @@ public class OrderServiceImpl implements OrderService {
     private OrderDetail convertToOrderDetailEntity(OrderDetailRequestDTO dto) {
         return OrderDetail.builder()
                 .product(productService.getById(dto.getProductId()))
-                .quantity(dto.getQuantity())
                 .build();
     }
     // OrderServiceImpl.java
@@ -352,4 +353,20 @@ public class OrderServiceImpl implements OrderService {
             .map(this::convertToOrderDetailResponseDTO)
             .collect(Collectors.toList());
     }
+    public boolean hasUserOwnedGame(int customerId, int productId) {
+    List<OrderDetailResponseDTO> library = getLibraryByCustomerId(customerId);
+    return library.stream().anyMatch(dto -> dto.getProductResponseDTO().getId() == productId);
+}
+
+@Override
+public List<OrderResponseDTO> getOrderHistory(int customerId, int page, int size) {
+    // Ví dụ: phân trang đơn giản
+    List<Order> orders = orderRepository.findByCustomerId(customerId);
+    int fromIndex = Math.min(page * size, orders.size());
+    int toIndex = Math.min(fromIndex + size, orders.size());
+    List<Order> pagedOrders = orders.subList(fromIndex, toIndex);
+    return pagedOrders.stream()
+            .map(this::convertToOrderResponseDTO)
+            .collect(Collectors.toList());
+}
 }

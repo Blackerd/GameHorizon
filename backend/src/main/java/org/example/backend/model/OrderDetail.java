@@ -32,7 +32,6 @@ public class OrderDetail {
     private String activationKey;
 
 
-    private Integer quantity;
 
     @Override
     public boolean equals(Object o) {

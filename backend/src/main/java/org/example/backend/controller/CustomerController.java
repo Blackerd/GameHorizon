@@ -10,6 +10,11 @@ import org.example.backend.service.impl.CustomerServiceImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.http.ResponseEntity;
+import java.util.Map;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.example.backend.config.JwtUtil; 
+import org.example.backend.dto.response.CartResponseDTO;
 
 import java.util.List;
 
@@ -22,11 +27,7 @@ public class CustomerController {
     private final CustomerService customerService;
     private final CartService cartService;
     private final CustomerServiceImpl customerServiceImpl;
-
-    @GetMapping("/quantity/{customerId}")
-    public int getQuantity(@PathVariable("customerId") int customerId) {
-        return customerService.getQuantityByCustomerId(customerId);
-    }
+    private final JwtUtil jwtUtil;
 
     @PostMapping
     public int addCustomer(@RequestBody CustomerRequestDTO customer) {
@@ -50,6 +51,8 @@ public class CustomerController {
         customerService.updateByAdmin(customerId, customer);
     }
 
+    
+    @PreAuthorize("hasRole('ADMIN')")   
     @DeleteMapping("/{customerId}")
     public void deleteCustomer(@PathVariable int customerId) {
         customerService.deleteCustomer(customerId);
@@ -70,12 +73,26 @@ public class CustomerController {
         return customerService.checkUsername(username);
     }
 
-    @PostMapping("/login")
-    public CustomerResponseDTO login(@RequestBody LoginRequest loginRequest) {
-        CustomerResponseDTO cus = customerService.login(loginRequest.getUsername(), loginRequest.getPassword());
-        cus.setCartId(cartService.getCartByCustomerId(cus.getId()).getId());
-        return cus;
+ 
+@PostMapping("/login")
+public ResponseEntity<?> login(@RequestBody LoginRequest loginRequest) {
+    CustomerResponseDTO cus = customerService.login(loginRequest.getUsername(), loginRequest.getPassword());
+    if (cus == null) {
+        return ResponseEntity.status(401).body(Map.of("error", "Invalid username or password"));
     }
+    CartResponseDTO cart = cartService.getCartByCustomerId(cus.getId());
+    if (cart != null) {
+        cus.setCartId(cart.getId());
+    } else {
+        cus.setCartId(-1); // hoặc 0, hoặc null tùy logic của bạn
+    }
+    String roleStr = (cus.isRole() ? "ADMIN" : "USER");
+    String token = jwtUtil.generateToken(cus.getUsername(), roleStr);
+    return ResponseEntity.ok(Map.of(
+        "token", token,
+        "user", cus
+    ));
+}   
 
     @PostMapping("/resetPassword/{username}")
     public void resetPassword(

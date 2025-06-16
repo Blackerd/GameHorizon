@@ -3,6 +3,7 @@ package org.example.backend.service;
 
 import org.example.backend.dto.request.CartRequestDTO;
 import org.example.backend.dto.response.CartResponseDTO;
+import org.example.backend.model.Cart;
 
 public interface CartService {
     int saveCart(CartRequestDTO cartRequestDTO);
@@ -11,5 +12,6 @@ public interface CartService {
 
     CartResponseDTO getCartByCustomerId(int id);
 
-    int getQuantityCartItemInCart(int cartId);
+    Cart getByCustomerId(int customerId);
+
 }
