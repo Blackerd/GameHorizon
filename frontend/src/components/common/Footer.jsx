@@ -7,7 +7,7 @@ const Footer = () => {
       <div className="container mx-auto px-4">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           <div>
-            <h3 className="text-xl font-bold mb-4">Epic Games</h3>
+            <h3 className="text-xl font-bold mb-4">Game Horizon</h3>
             <ul className="space-y-2">
               <li><a href="#" className="text-gray-400 hover:text-white transition-colors">Về chúng tôi</a></li>
               <li><a href="#" className="text-gray-400 hover:text-white transition-colors">Điều khoản dịch vụ</a></li>

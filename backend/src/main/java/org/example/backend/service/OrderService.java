@@ -1,6 +1,5 @@
 package org.example.backend.service;
 
-
 import org.example.backend.dto.request.OrderEditRequestDTO;
 import org.example.backend.dto.request.OrderRequestDTO;
 import org.example.backend.dto.response.MonthlyRevenueResponse;
@@ -32,7 +31,9 @@ public interface OrderService {
 
     List<OrderResponseDTO> getOrdersByStatusAndCustomerId(String status, int customerId);
 
-   
-   List<OrderResponseDTO> getOrderHistory(int customerId, int page, int size);
+    List<OrderResponseDTO> getOrderHistory(int customerId, int page, int size);
+
     List<OrderDetailResponseDTO> getLibraryByCustomerId(int customerId);
+
+    boolean hasUserOwnedGame(int customerId, int productId);
 }

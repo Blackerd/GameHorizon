@@ -2,7 +2,6 @@ package org.example.backend.service;
 
 import org.example.backend.dto.request.ProductRequestDTO;
 import org.example.backend.dto.response.ProductResponseDTO;
-import org.example.backend.model.Product;
 import org.springframework.data.domain.Page;
 
 import java.util.List;
@@ -18,8 +17,12 @@ public interface ProductService {
 
     ProductResponseDTO getProductById(int id);
 
+    List<ProductResponseDTO> getRelatedProducts(int productId);
+
     List<ProductResponseDTO> findByCategoryId(Integer categoryId);
 
     List<ProductResponseDTO> findByNameContainingIgnoreCase(String name);
-    Page<Product> advancedSearch(String name, String category, Double minPrice, Double maxPrice, int page, int size);
+
+    Page<ProductResponseDTO> advancedSearch(String name, String category, Double minPrice, Double maxPrice, int page,
+            int size);
 }

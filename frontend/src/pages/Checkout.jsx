@@ -63,7 +63,7 @@ const Checkout = () => {
       );
       await clearCart();
       alert('Thanh toán thành công! Game đã được thêm vào thư viện của bạn.');
-      navigate('/orders');
+      navigate('/');
     } catch (error) {
       alert('Lỗi khi đặt hàng. Vui lòng thử lại.');
       console.error('Lỗi đặt hàng:', error);

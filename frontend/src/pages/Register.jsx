@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useCustomer } from '../context/CustomerContext.jsx';
+import toast from 'react-hot-toast';
 
 const Register = () => {
   const [formData, setFormData] = useState({
@@ -19,8 +20,10 @@ const Register = () => {
     try {
       await registerCustomer(formData);
       navigate('/login');
-    } catch (err) {
-      setError('Lỗi đăng ký. Vui lòng thử lại.');
+    } catch (err)
+    {
+      setError(err?.response?.data?.message || 'Đăng ký thất bại');
+      toast.error(error);
     }
   };
 

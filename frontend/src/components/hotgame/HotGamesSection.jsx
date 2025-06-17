@@ -28,7 +28,7 @@ const HotGamesSection = () => {
     }
   });
 
-  const [activeTab, setActiveTab] = useState('Discover');
+  const [activeTab, setActiveTab] = useState('Action');
   const [search, setSearch] = useState('');
   const [selected, setSelected] = useState(0);
   const [wishlist, setWishlistState] = useState(getWishlist(userId));
@@ -150,41 +150,52 @@ const HotGamesSection = () => {
               </div>
               
               {/* Large feature image that covers the right side */}
-              <img 
-                src={mainProduct.img} 
-                alt={mainProduct.name} 
-                className="w-full object-cover h-[450px] object-right" 
-              />
+          <img 
+            src={mainProduct.img} 
+            alt={mainProduct.name} 
+            loading="lazy"
+            className="w-full object-cover object-center h-[450px] bg-gray-800"
+            onError={e => {
+              e.target.onerror = null;
+              e.target.src = '/default-game.jpg'; // Ảnh mặc định nếu lỗi
+            }}
+          />
             </div>
           )}
         </div>
         
-        {/* Game List Sidebar */}
-        <div className="w-72 ml-4 space-y-2">
-          {filteredProducts.map((product, idx) => (
-            <button
-              key={product.id}
-              onClick={() => setSelected(idx)}
-              className={`flex items-center gap-3 p-2 rounded-lg transition w-full text-left ${
-                selected === idx ? 'bg-[#23283a]' : 'hover:bg-[#1a1c2e]'
-              }`}
-            >
-              <img 
-                src={product.img} 
-                alt={product.name} 
-                className="w-16 h-16 object-cover rounded" 
-              />
-              <div className="flex-1">
-                <div className="text-white text-sm font-medium line-clamp-2">
-                  {product.name}
-                </div>
-              </div>
-              {wishlist.includes(product.id) && (
-                <span className="text-yellow-400">★</span>
-              )}
-            </button>
-          ))}
+{/* Game List Sidebar */}
+<div className="w-72 ml-4 space-y-2">
+  {filteredProducts.map((product, idx) => (
+    <button
+      key={product.id}
+      onClick={() => setSelected(idx)}
+      className={`flex items-center gap-3 p-2 rounded-lg transition w-full text-left ${
+        selected === idx ? 'bg-[#23283a]' : 'hover:bg-[#1a1c2e]'
+      }`}
+    >
+      <img 
+        src={product.img} 
+        alt={product.name} 
+        loading="lazy"
+        className="w-16 h-16 object-cover object-center rounded bg-gray-800"
+        onError={e => {
+          e.target.onerror = null;
+          e.target.src = '/default-game.jpg';
+        }}
+      />
+      <div className="flex-1">
+        <div className="text-white text-sm font-medium line-clamp-2">
+          {product.name}
         </div>
+      </div>
+      {wishlist.includes(product.id) && (
+        <span className="text-yellow-400">★</span>
+      )}
+    </button>
+  ))}
+</div>
+
       </div>
     </div>
   );

@@ -38,11 +38,16 @@ const handleAddToCart = () => {
     <div className="bg-[#202020] rounded-lg overflow-hidden transition-transform duration-300 hover:-translate-y-1 hover:shadow-xl">
       <Link to={`/game/${product.id}`} className="block">
         <div className="relative h-48 overflow-hidden">
-          <img
-            src={product.img}
-            alt={product.name}
-            className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
-          />
+        <img
+          src={product.img}
+          alt={product.name}
+          loading="lazy"
+          className="w-full h-full object-cover object-center transition-transform duration-500 hover:scale-105 bg-gray-800"
+          onError={e => {
+            e.target.onerror = null;
+            e.target.src = '/default-game.jpg'; // Đặt ảnh mặc định trong public folder
+          }}
+        />
         </div>
       </Link>
 

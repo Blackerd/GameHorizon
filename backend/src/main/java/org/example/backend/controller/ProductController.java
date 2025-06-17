@@ -7,8 +7,6 @@ import org.example.backend.dto.response.ProductResponseDTO;
 import org.example.backend.service.ProductService;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.data.domain.Page;
-import org.example.backend.model.Product;
-
 
 import java.util.List;
 
@@ -30,12 +28,12 @@ public class ProductController {
     }
 
     @DeleteMapping("/{productId}")
-    public void deleteCustomer(@PathVariable int productId) {
+    public void deleteProduct(@PathVariable int productId) {
         productService.deleteProduct(productId);
     }
 
     @GetMapping("/{productId}")
-    public ProductResponseDTO getCustomer(@PathVariable int productId) {
+    public ProductResponseDTO getProduct(@PathVariable int productId) {
         return productService.getProductById(productId);
     }
 
@@ -54,16 +52,19 @@ public class ProductController {
         return productService.findByNameContainingIgnoreCase(name);
     }
 
-  
     @GetMapping("/search")
-    public Page<Product> searchProducts(
-        @RequestParam(required = false) String name,
-        @RequestParam(required = false) String category,
-        @RequestParam(required = false) Double minPrice,
-        @RequestParam(required = false) Double maxPrice,
-        @RequestParam(defaultValue = "0") int page,
-        @RequestParam(defaultValue = "10") int size
-    ) {
+    public Page<ProductResponseDTO> searchProducts(
+            @RequestParam(required = false) String name,
+            @RequestParam(required = false) String category,
+            @RequestParam(required = false) Double minPrice,
+            @RequestParam(required = false) Double maxPrice,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
         return productService.advancedSearch(name, category, minPrice, maxPrice, page, size);
+    }
+
+    @GetMapping("/{productId}/related")
+    public List<ProductResponseDTO> getRelatedProducts(@PathVariable int productId) {
+        return productService.getRelatedProducts(productId);
     }
 }

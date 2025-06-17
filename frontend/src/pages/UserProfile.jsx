@@ -4,11 +4,61 @@ import { Link, useNavigate, Navigate } from 'react-router-dom';
 import OrderHistory from './OrderHistory';
 import WishlistGames from '../components/wishlist/WishlistGames';
 import Library from './Library';
+import axiosInstance from '../api/axiosInstance';
+import toast from 'react-hot-toast';
+
+
 
 const UserProfile = () => {
   const { customer } = useCustomer();
   const [tab, setTab] = useState('profile');
+  const [showChangePassword, setShowChangePassword] = useState(false);
+  const [oldPassword, setOldPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [changePwMsg, setChangePwMsg] = useState('');
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+
+
+  if (!customer) {
+    return <Navigate to="/login" replace />;
+  }
+// Hàm xử lý đổi mật khẩu
+  const handleChangePassword = async (e) => {
+    e.preventDefault();
+    setChangePwMsg('');
+    if (!oldPassword || !newPassword || !confirmPassword)
+    {
+      toast.error('Vui lòng điền đầy đủ thông tin');
+      return;
+    }
+    if (newPassword !== confirmPassword)
+    {
+      toast.error('Mật khẩu mới không khớp');
+      return;
+    }
+    setLoading(true);
+    try {
+      await axiosInstance.patch(`/customer/changePassword/${customer.id}`, {
+        oldPassword,
+        newPassword,
+      });
+      toast.success('Đổi mật khẩu thành công');
+      setOldPassword('');
+      setNewPassword('');
+      setConfirmPassword('');
+      setShowChangePassword(false);
+    } catch (err) {
+      setChangePwMsg(
+        err?.response?.data?.message ||
+          err?.response?.data ||
+          'Đổi mật khẩu thất bại'
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
 
   if (!customer) {
     return <Navigate to="/login" replace />;
@@ -100,12 +150,65 @@ const UserProfile = () => {
                 <span className="font-semibold text-[#00b4ff]">Số điện thoại:</span> {customer.phone}
               </div>
             </div>
-            <Link
-              to="/change-password"
+            <button
               className="inline-block bg-[#0078F2] text-white px-6 py-2 rounded-lg hover:bg-[#0060c7] transition font-semibold shadow"
+              onClick={() => setShowChangePassword((v) => !v)}
             >
               Đổi mật khẩu
-            </Link>
+            </button>
+             {showChangePassword && (
+              <form
+                className="mt-6 bg-[#23283a] p-6 rounded-lg shadow space-y-4 max-w-md"
+                onSubmit={handleChangePassword}
+              >
+                <div>
+                  <label className="block mb-1 text-[#00b4ff] font-semibold">Mật khẩu cũ</label>
+                  <input
+                    type="password"
+                    className="w-full p-2 rounded bg-[#181c24] border border-[#232323] text-white"
+                    value={oldPassword}
+                    onChange={(e) => setOldPassword(e.target.value)}
+                  />
+                </div>
+                <div>
+                  <label className="block mb-1 text-[#00b4ff] font-semibold">Mật khẩu mới</label>
+                  <input
+                    type="password"
+                    className="w-full p-2 rounded bg-[#181c24] border border-[#232323] text-white"
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                  />
+                </div>
+                <div>
+                  <label className="block mb-1 text-[#00b4ff] font-semibold">Nhập lại mật khẩu mới</label>
+                  <input
+                    type="password"
+                    className="w-full p-2 rounded bg-[#181c24] border border-[#232323] text-white"
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                  />
+                </div>
+                {changePwMsg && (
+                  <div className="text-red-400 font-semibold">{changePwMsg}</div>
+                )}
+                <div className="flex gap-4">
+                  <button
+                    type="submit"
+                    className="bg-[#00b4ff] px-4 py-2 rounded text-white font-semibold hover:bg-[#0078F2] transition"
+                    disabled={loading}
+                  >
+                    {loading ? 'Đang đổi...' : 'Xác nhận đổi mật khẩu'}
+                  </button>
+                  <button
+                    type="button"
+                    className="bg-gray-500 px-4 py-2 rounded text-white font-semibold hover:bg-gray-600 transition"
+                    onClick={() => setShowChangePassword(false)}
+                  >
+                    Hủy
+                  </button>
+                </div>
+              </form>
+            )}
           </>
         )}
         {/* Đã xóa phần quản lý địa chỉ */}

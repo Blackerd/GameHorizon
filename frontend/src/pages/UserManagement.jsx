@@ -8,6 +8,8 @@ import {
   createCustomer,
 } from '../api/customerApi';
 import { Trash2, Edit, Plus, Eye } from 'lucide-react';
+import toast from 'react-hot-toast';
+
 
 const UserManagement = () => {
   const queryClient = useQueryClient();
@@ -39,9 +41,10 @@ const UserManagement = () => {
     try {
       await deleteCustomer(id);
       queryClient.invalidateQueries(['customers']);
-      alert('Đã xóa khách hàng');
-    } catch {
-      alert('Không thể xóa khách hàng');
+      toast.success('Xóa khách hàng thành công');
+    } catch
+    {
+      toast.error('Không thể xóa khách hàng (có thể khách hàng này có đơn hàng)');
     }
   };
 
@@ -71,9 +74,10 @@ const UserManagement = () => {
       });
       queryClient.invalidateQueries(['customers']);
       setEditForm(null);
-      alert('Cập nhật thành công');
-    } catch {
-      alert('Không thể cập nhật');
+      toast.success('Cập nhật thông tin khách hàng thành công');
+    } catch
+    {
+      toast.error('Không thể cập nhật thông tin khách hàng');
     }
   };
 
@@ -100,9 +104,10 @@ const UserManagement = () => {
       await createCustomer(addForm);
       queryClient.invalidateQueries(['customers']);
       setAddForm(null);
-      alert('Thêm khách hàng thành công');
-    } catch {
-      alert('Không thể thêm khách hàng (có thể username đã tồn tại)');
+      toast.success('Thêm khách hàng thành công');
+    } catch
+    {
+      toast.error('Không thể thêm khách hàng');
     }
   };
 

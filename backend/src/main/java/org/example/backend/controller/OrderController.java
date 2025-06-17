@@ -96,4 +96,9 @@ public class OrderController {
         // Triển khai phân trang ở service/repository
         return orderService.getOrderHistory(customerId, page, size);
     }
+
+    @GetMapping("/owned/{customerId}/{productId}")
+    public boolean hasUserOwnedGame(@PathVariable int customerId, @PathVariable int productId) {
+        return orderService.hasUserOwnedGame(customerId, productId);
+    }
 }

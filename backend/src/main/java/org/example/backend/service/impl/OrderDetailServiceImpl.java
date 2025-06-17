@@ -22,6 +22,7 @@ public class OrderDetailServiceImpl implements OrderDetailService {
         private final OrderDetailRepository orderDetailRepository;
         private final OrderRepository orderRepository;
         private final ProductRepository productRepository;
+        private final ProductServiceImpl productServiceImpl;
 
         @Override
         public OrderDetailResponseDTO saveOrderDetail(OrderDetailSaveRequest requestDTO) {
@@ -34,13 +35,7 @@ public class OrderDetailServiceImpl implements OrderDetailService {
 
                 return OrderDetailResponseDTO.builder()
                                 .orderId(order.getId())
-                                .productResponseDTO(ProductResponseDTO.builder()
-                                                .id(product.getId())
-                                                .name(product.getName())
-                                                .img(product.getImg())
-                                                .categoryName(product.getCategory().getName())
-                                                .price(product.getPrice())
-                                                .build())
+                                .productResponseDTO(productServiceImpl.getProductById(product.getId()))
                                 .build();
         }
 

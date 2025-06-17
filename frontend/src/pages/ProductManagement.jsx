@@ -4,99 +4,187 @@ import { useProducts } from '../hooks/useProducts';
 import { createProduct, updateProduct, deleteProduct } from '../api/productApi';
 import { uploadImage } from '../api/imageApi';
 import { Trash2, Edit, Plus } from 'lucide-react';
-import { useCategories } from '../hooks/useCategories'; // Thêm dòng này
+import { useCategories } from '../hooks/useCategories';
+import toast from 'react-hot-toast';
+
+const initialForm = {
+  name: '',
+  price: '',
+  categoryId: '',
+  detail: '',
+  img: '',
+  developer: '',
+  publisher: '',
+  releaseDate: '',
+  platform: '',
+  ageRating: '',
+  discount: '',
+  epicRewards: '',
+  refundType: '',
+  media: [],
+  dlcs: [],
+  achievements: [],
+  systemRequirements: {
+    os: '',
+    processor: '',
+    memory: '',
+    graphics: '',
+    directx: '',
+    storage: ''
+  }
+};
 
 const ProductManagement = () => {
   const queryClient = useQueryClient();
   const { data: products = [], isLoading, isError, error } = useProducts();
-  const { data: categories = [] } = useCategories(); // Lấy danh mục từ server
+  const { data: categories = [] } = useCategories();
   const [searchTerm, setSearchTerm] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState(null);
-  const [formData, setFormData] = useState({
-    name: '',
-    price: '',
-    categoryId: '', // Đổi thành categoryId
-    detail: '',
-    img: ''
-  });
+  const [formData, setFormData] = useState(initialForm);
   const [file, setFile] = useState(null);
   const [imageUrl, setImageUrl] = useState('');
 
-  // Lọc sản phẩm theo tên
-  const filteredProducts = products.filter((product) =>
-    product.name.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  // Media, DLC, Achievement handlers
+  const handleAddMedia = () => setFormData({ ...formData, media: [...formData.media, { type: '', url: '' }] });
+  const handleMediaChange = (idx, field, value) => {
+    const media = [...formData.media];
+    media[idx][field] = value;
+    setFormData({ ...formData, media });
+  };
+  const handleAddDlc = () => setFormData({ ...formData, dlcs: [...formData.dlcs, { name: '', img: '', price: '' }] });
+  const handleDlcChange = (idx, field, value) => {
+    const dlcs = [...formData.dlcs];
+    dlcs[idx][field] = value;
+    setFormData({ ...formData, dlcs });
+  };
+  const handleAddAchievement = () => setFormData({ ...formData, achievements: [...formData.achievements, { name: '', icon: '', xp: '' }] });
+  const handleAchievementChange = (idx, field, value) => {
+    const achievements = [...formData.achievements];
+    achievements[idx][field] = value;
+    setFormData({ ...formData, achievements });
+  };
+  const handleSysReqChange = (field, value) => {
+    setFormData({
+      ...formData,
+      systemRequirements: { ...formData.systemRequirements, [field]: value }
+    });
+  };
 
+  // File/image handlers
   const handleFileChange = (e) => setFile(e.target.files[0]);
-
   const handleUpload = async () => {
     if (!file) return;
     try {
       const { data } = await uploadImage(file);
       setImageUrl(data.url);
-      alert('Tải ảnh thành công!');
-    } catch {
-      alert('Không thể tải ảnh lên');
+      toast.success('Tải ảnh lên thành công');
+    } catch
+    {
+      toast.error('Lỗi khi tải ảnh lên');
     }
   };
 
+  // Input handler
   const handleChange = (e) => setFormData({ ...formData, [e.target.name]: e.target.value });
 
-const handleSubmit = async (e) => {
+  // Submit handler
+  const handleSubmit = async (e) => {
   e.preventDefault();
-const selectedCategory = categories.find(cat => String(cat.id) === String(formData.categoryId));
-const productData = {
-  name: formData.name,
-  price: parseFloat(formData.price),
-  categoryName: selectedCategory ? selectedCategory.name : '', // Phải có name
-  detail: formData.detail,
-  img: imageUrl || formData.img
-};
-if (!selectedCategory) {
-  alert('Bạn phải chọn danh mục!');
-  return;
-};
-  if (editingProduct) {
-    await updateProduct(editingProduct.id, productData);
-    alert('Cập nhật sản phẩm thành công');
-     } else {
-      console.log('productData gửi lên:', productData);
-    await createProduct(productData);
-    alert('Tạo sản phẩm thành công');
-  }
-  queryClient.invalidateQueries(['products']);
-  setFormData({ name: '', price: '', categoryId: '', detail: '', img: '' });
-  setImageUrl('');
-  setFile(null);
-  setIsModalOpen(false);
-  setEditingProduct(null);
-};
-  const handleEdit = (product) => {
-    // Tìm categoryId từ categories dựa vào categoryName
-    const foundCategory = categories.find(cat => cat.name === product.categoryName);
-    setEditingProduct(product);
-    setFormData({
-      name: product.name,
-      price: product.price,
-      categoryId: foundCategory ? foundCategory.id : '',
-      detail: product.detail,
-      img: product.img
-    });
-    setImageUrl(product.img);
-    setIsModalOpen(true);
+  const selectedCategory = categories.find(cat => String(cat.id) === String(formData.categoryId));
+  const productData = {
+    ...formData,
+    categoryName: selectedCategory ? selectedCategory.name : '',
+    img: imageUrl || formData.img,
+    price: parseFloat(formData.price),
+    discount: parseFloat(formData.discount) || 0,
+    dlcs: Array.isArray(formData.dlcs) ? formData.dlcs.map(d => ({
+      ...d,
+      price: parseFloat(d.price) || 0
+    })) : [],
+    media: Array.isArray(formData.media) ? formData.media : [],
+    achievements: Array.isArray(formData.achievements) ? formData.achievements.map(a => ({
+      ...a,
+      xp: parseInt(a.xp) || 0
+    })) : [],
+    systemRequirements: formData.systemRequirements || {
+      os: '', processor: '', memory: '', graphics: '', directx: '', storage: ''
+    }
   };
+  if (!selectedCategory) {
+    toast.error('Vui lòng chọn danh mục cho sản phẩm');
+    return;
+  }
+  try {
+    if (editingProduct) {
+      await updateProduct(editingProduct.id, productData);
+      toast.success('Cập nhật sản phẩm thành công');
+    } else {
+      await createProduct(productData);
+      toast.success('Tạo sản phẩm thành công');
+    }
+    queryClient.invalidateQueries(['products']);
+    setFormData(initialForm);
+    setImageUrl('');
+    setFile(null);
+    setIsModalOpen(false);
+    setEditingProduct(null);
+  } catch (err) {
+    toast.error('Lỗi khi lưu sản phẩm');
+  }
+};
 
+  // Edit handler
+  const handleEdit = (product) => {
+  const foundCategory = categories.find(cat => cat.name === product.categoryName);
+  setEditingProduct(product);
+  setFormData({
+    name: product.name || '',
+    price: product.price || '',
+    categoryId: foundCategory ? foundCategory.id : '',
+    detail: product.detail || '',
+    img: product.img || '',
+    developer: product.developer || '',
+    publisher: product.publisher || '',
+    releaseDate: product.releaseDate || '',
+    platform: product.platform || '',
+    ageRating: product.ageRating || '',
+    discount: product.discount || '',
+    epicRewards: product.epicRewards || '',
+    refundType: product.refundType || '',
+    media: Array.isArray(product.media) ? product.media : [],
+    dlcs: Array.isArray(product.dlcs) ? product.dlcs : [],
+    achievements: Array.isArray(product.achievements) ? product.achievements : [],
+    systemRequirements: {
+      os: product.systemRequirements?.os || '',
+      processor: product.systemRequirements?.processor || '',
+      memory: product.systemRequirements?.memory || '',
+      graphics: product.systemRequirements?.graphics || '',
+      directx: product.systemRequirements?.directx || '',
+      storage: product.systemRequirements?.storage || ''
+    }
+  });
+  setImageUrl(product.img || '');
+  setIsModalOpen(true);
+};
+
+  // Delete handler
   const handleDelete = async (id) => {
     if (!window.confirm('Bạn có chắc chắn muốn xóa sản phẩm này không?')) return;
     try {
       await deleteProduct(id);
       queryClient.invalidateQueries(['products']);
-      alert('Xóa sản phẩm thành công');
-    } catch {
-      alert('Lỗi: Không thể xóa sản phẩm');
+      toast.success('Xóa sản phẩm thành công');
+    } catch
+    {
+      toast.error('Lỗi khi xóa sản phẩm');
     }
   };
+
+  // Filtered products
+  const filteredProducts = products.filter((product) =>
+    product.name.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   return (
     <div>
@@ -106,7 +194,7 @@ if (!selectedCategory) {
           onClick={() => {
             setIsModalOpen(true);
             setEditingProduct(null);
-            setFormData({ name: '', price: '', categoryId: '', detail: '', img: '' });
+            setFormData(initialForm);
             setImageUrl('');
             setFile(null);
           }}
@@ -167,7 +255,7 @@ if (!selectedCategory) {
       {/* Modal thêm/sửa sản phẩm */}
       {isModalOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-[#202020] p-6 rounded-lg w-full max-w-md">
+          <div className="bg-[#202020] p-6 rounded-lg w-full max-w-md overflow-y-auto max-h-[90vh]">
             <h2 className="text-2xl font-bold mb-4">
               {editingProduct ? 'Chỉnh sửa sản phẩm' : 'Thêm sản phẩm'}
             </h2>
@@ -202,7 +290,6 @@ if (!selectedCategory) {
                 className="w-full p-2 mb-4 bg-[#303030] rounded text-white"
                 required
               />
-              {/* Sử dụng select để chọn danh mục */}
               <select
                 name="categoryId"
                 value={formData.categoryId}
@@ -224,27 +311,207 @@ if (!selectedCategory) {
                 placeholder="Mô tả"
                 className="w-full p-2 mb-4 bg-[#303030] rounded text-white"
               />
-              <div className="flex gap-4">
-                <button
-                  type="submit"
-                  className="bg-[#0078F2] text-white px-4 py-2 rounded hover:bg-[#0060c7]"
-                >
-                  {editingProduct ? 'Cập nhật' : 'Tạo'}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setIsModalOpen(false);
-                    setEditingProduct(null);
-                    setFormData({ name: '', price: '', categoryId: '', detail: '', img: '' });
-                    setImageUrl('');
-                    setFile(null);
-                  }}
-                  className="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600"
-                >
-                  Hủy
-                </button>
-              </div>
+              <input
+                name="developer"
+                value={formData.developer}
+                onChange={handleChange}
+                placeholder="Developer"
+                className="w-full p-2 mb-4 bg-[#303030] rounded text-white"
+              />
+              <input
+                name="publisher"
+                value={formData.publisher}
+                onChange={handleChange}
+                placeholder="Publisher"
+                className="w-full p-2 mb-4 bg-[#303030] rounded text-white"
+              />
+              <input
+                name="releaseDate"
+                value={formData.releaseDate}
+                onChange={handleChange}
+                placeholder="Release Date"
+                className="w-full p-2 mb-4 bg-[#303030] rounded text-white"
+              />
+              <input
+                name="platform"
+                value={formData.platform}
+                onChange={handleChange}
+                placeholder="Platform"
+                className="w-full p-2 mb-4 bg-[#303030] rounded text-white"
+              />
+              <input
+                name="ageRating"
+                value={formData.ageRating}
+                onChange={handleChange}
+                placeholder="Age Rating"
+                className="w-full p-2 mb-4 bg-[#303030] rounded text-white"
+              />
+              <input
+                name="discount"
+                type="number"
+                value={formData.discount}
+                onChange={handleChange}
+                placeholder="Discount (%)"
+                className="w-full p-2 mb-4 bg-[#303030] rounded text-white"
+              />
+              <input
+                name="epicRewards"
+                value={formData.epicRewards}
+                onChange={handleChange}
+                placeholder="Epic Rewards"
+                className="w-full p-2 mb-4 bg-[#303030] rounded text-white"
+              />
+              <input
+                name="refundType"
+                value={formData.refundType}
+                onChange={handleChange}
+                placeholder="Refund Type"
+                className="w-full p-2 mb-4 bg-[#303030] rounded text-white"
+              />
+         {/* Media */}
+<div className="mb-4">
+  <label className="font-semibold text-white">Media</label>
+  {formData.media.map((m, idx) => (
+    <div key={idx} className="flex gap-2 mb-2">
+      <input
+        value={m.type}
+        onChange={e => handleMediaChange(idx, 'type', e.target.value)}
+        placeholder="Type (image/video)"
+        className="p-2 border border-[#303030] rounded bg-[#23283a] text-white"
+        style={{ minWidth: 100 }}
+      />
+      <input
+        value={m.url}
+        onChange={e => handleMediaChange(idx, 'url', e.target.value)}
+        placeholder="URL"
+        className="p-2 border border-[#303030] rounded bg-[#23283a] text-white flex-1"
+      />
+    </div>
+  ))}
+  <button type="button" onClick={handleAddMedia} className="text-blue-600">+ Thêm media</button>
+</div>
+           {/* DLCs */}
+<div className="mb-4">
+  <label className="font-semibold text-white">DLCs</label>
+  {formData.dlcs.map((d, idx) => (
+    <div key={idx} className="flex gap-2 mb-2">
+      <input
+        value={d.name}
+        onChange={e => handleDlcChange(idx, 'name', e.target.value)}
+        placeholder="Tên DLC"
+        className="p-2 border border-[#303030] rounded bg-[#23283a] text-white"
+        style={{ minWidth: 100 }}
+      />
+      <input
+        value={d.img}
+        onChange={e => handleDlcChange(idx, 'img', e.target.value)}
+        placeholder="Ảnh DLC"
+        className="p-2 border border-[#303030] rounded bg-[#23283a] text-white"
+      />
+      <input
+        value={d.price}
+        type="number"
+        onChange={e => handleDlcChange(idx, 'price', e.target.value)}
+        placeholder="Giá"
+        className="p-2 border border-[#303030] rounded bg-[#23283a] text-white"
+        style={{ width: 80 }}
+      />
+    </div>
+  ))}
+  <button type="button" onClick={handleAddDlc} className="text-blue-600">+ Thêm DLC</button>
+</div>
+            {/* Achievements */}
+<div className="mb-4">
+  <label className="font-semibold text-white">Achievements</label>
+  {formData.achievements.map((a, idx) => (
+    <div key={idx} className="flex gap-2 mb-2">
+      <input
+        value={a.name}
+        onChange={e => handleAchievementChange(idx, 'name', e.target.value)}
+        placeholder="Tên"
+        className="p-2 border border-[#303030] rounded bg-[#23283a] text-white"
+        style={{ minWidth: 100 }}
+      />
+      <input
+        value={a.icon}
+        onChange={e => handleAchievementChange(idx, 'icon', e.target.value)}
+        placeholder="Icon"
+        className="p-2 border border-[#303030] rounded bg-[#23283a] text-white"
+      />
+      <input
+        value={a.xp}
+        type="number"
+        onChange={e => handleAchievementChange(idx, 'xp', e.target.value)}
+        placeholder="XP"
+        className="p-2 border border-[#303030] rounded bg-[#23283a] text-white"
+        style={{ width: 80 }}
+      />
+    </div>
+  ))}
+  <button type="button" onClick={handleAddAchievement} className="text-blue-600">+ Thêm Achievement</button>
+</div>
+
+{/* System Requirements */}
+<div className="mb-4">
+  <label className="font-semibold text-white">System Requirements</label>
+  <input
+    value={formData.systemRequirements.os}
+    onChange={e => handleSysReqChange('os', e.target.value)}
+    placeholder="OS"
+    className="p-2 border border-[#303030] rounded bg-[#23283a] text-white mb-2 w-full"
+  />
+  <input
+    value={formData.systemRequirements.processor}
+    onChange={e => handleSysReqChange('processor', e.target.value)}
+    placeholder="Processor"
+    className="p-2 border border-[#303030] rounded bg-[#23283a] text-white mb-2 w-full"
+  />
+  <input
+    value={formData.systemRequirements.memory}
+    onChange={e => handleSysReqChange('memory', e.target.value)}
+    placeholder="Memory"
+    className="p-2 border border-[#303030] rounded bg-[#23283a] text-white mb-2 w-full"
+  />
+  <input
+    value={formData.systemRequirements.graphics}
+    onChange={e => handleSysReqChange('graphics', e.target.value)}
+    placeholder="Graphics"
+    className="p-2 border border-[#303030] rounded bg-[#23283a] text-white mb-2 w-full"
+  />
+  <input
+    value={formData.systemRequirements.directx}
+    onChange={e => handleSysReqChange('directx', e.target.value)}
+    placeholder="DirectX"
+    className="p-2 border border-[#303030] rounded bg-[#23283a] text-white mb-2 w-full"
+  />
+  <input
+    value={formData.systemRequirements.storage}
+    onChange={e => handleSysReqChange('storage', e.target.value)}
+    placeholder="Storage"
+    className="p-2 border border-[#303030] rounded bg-[#23283a] text-white mb-2 w-full"
+  />
+</div>
+<div className="flex gap-4">
+  <button
+    type="submit"
+    className="bg-[#0078F2] text-white px-4 py-2 rounded hover:bg-[#0060c7]"
+  >
+    {editingProduct ? 'Cập nhật' : 'Tạo'}
+  </button>
+  <button
+    type="button"
+    onClick={() => {
+      setIsModalOpen(false);
+      setEditingProduct(null);
+      setFormData(initialForm);
+      setImageUrl('');
+      setFile(null);
+    }}
+    className="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600"
+  >
+    Hủy
+  </button>
+</div>
             </form>
           </div>
         </div>
