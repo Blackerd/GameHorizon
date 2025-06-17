@@ -10,11 +10,11 @@ import OrderHistory from './pages/OrderHistory.jsx';
 import Admin from './pages/Admin.jsx';
 import Login from './pages/Login.jsx';
 import Register from './pages/Register.jsx';
-import Address from './pages/Address.jsx';
 import UserProfile from './pages/UserProfile.jsx';
 import CategoryList from './pages/CategoryList.jsx';
 import OrderManagement from './pages/OrderManagement.jsx';
-import { Toaster } from 'react-hot-toast'; // Thêm dòng này
+import { Toaster } from 'react-hot-toast'; 
+import ForgotPassword from './pages/ForgotPassword.jsx';
 
 function App() {
   return (
@@ -49,10 +49,10 @@ function App() {
           <Route path="/admin" element={<Admin />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
-          <Route path="/address" element={<Address/>} />
           <Route path="/profile" element={<UserProfile/>} />
           <Route path="/categoryList" element={<CategoryList/>} />
           <Route path="/admin/orders" element={<OrderManagement />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
         </Routes>
       </main>
       <Footer />

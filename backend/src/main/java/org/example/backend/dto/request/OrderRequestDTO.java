@@ -13,13 +13,9 @@ import java.util.List;
 public class OrderRequestDTO {
     private Integer customerId;
     private Integer totalAmount;
-    private String address;
-    private String numberPhone;
     @Hidden
     private String status;
     @Hidden
-    private String paymentMethod;
-    private String receiver;
+    private String paymentMethod = "CARD";
     private List<OrderDetailRequestDTO> orderDetails;
 }
-

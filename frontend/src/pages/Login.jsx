@@ -56,9 +56,12 @@ const handleSubmit = async (e) => {
             Đăng nhập
           </button>
         </form>
-        <p className="mt-4 text-center">
-          Chưa có tài khoản? <Link to="/register" className="text-[#0078F2]">Đăng ký</Link>
-        </p>
+      <p className="mt-4 text-center">
+      Chưa có tài khoản? <Link to="/register" className="text-[#0078F2]">Đăng ký</Link>
+    </p>
+    <p className="mt-2 text-center">
+      <Link to="/forgot-password" className="text-[#0078F2]">Quên mật khẩu?</Link>
+    </p>
       </div>
     </div>
   );

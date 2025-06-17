@@ -18,15 +18,8 @@ const OrderForm = () => {
   const [formData, setFormData] = useState({
     customerId: user?.id || '',
     totalAmount: subtotal,
-    address: '',
-    numberPhone: '',
-    receiver: '',
     orderItems: cart.map((item) => ({ productId: item.id, quantity: 1 })),
   });
-
-  const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -46,27 +39,7 @@ const OrderForm = () => {
       <div className="mb-4">
         <p className="font-semibold">Tổng cộng: {subtotal.toLocaleString('vi-VN')}₫</p>
       </div>
-      <input
-        name="address"
-        value={formData.address}
-        onChange={handleChange}
-        placeholder="Địa chỉ"
-        className="w-full p-2 mb-4 border rounded"
-      />
-      <input
-        name="numberPhone"
-        value={formData.numberPhone}
-        onChange={handleChange}
-        placeholder="Số điện thoại"
-        className="w-full p-2 mb-4 border rounded"
-      />
-      <input
-        name="recipient"
-        value={formData.receiver}
-        onChange={handleChange}
-        placeholder="Người nhận"
-        className="w-full p-2 mb-4 border rounded"
-      />
+      {/* Đã xóa các trường địa chỉ, số điện thoại, người nhận */}
       <button type="submit" className="w-full bg-[#0078F2] text-white p-2 rounded hover:bg-[#0060c7]">
         Đặt hàng
       </button>

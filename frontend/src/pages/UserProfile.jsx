@@ -1,9 +1,8 @@
 import React, { useState } from 'react';
 import { useCustomer } from '../context/CustomerContext';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, Navigate } from 'react-router-dom';
 import OrderHistory from './OrderHistory';
 import WishlistGames from '../components/wishlist/WishlistGames';
-import AddressManager from './AddressManager';
 import Library from './Library';
 
 const UserProfile = () => {
@@ -11,9 +10,9 @@ const UserProfile = () => {
   const [tab, setTab] = useState('profile');
   const navigate = useNavigate();
 
-if (!customer) {
-  return <Navigate to="/login" replace />;
-}
+  if (!customer) {
+    return <Navigate to="/login" replace />;
+  }
   return (
     <div className="max-w-4xl mx-auto flex bg-gradient-to-br from-[#23283a] to-[#181c24] rounded-2xl mt-12 shadow-2xl overflow-hidden min-h-[520px] border border-[#232323]">
       {/* Sidebar */}
@@ -37,17 +36,7 @@ if (!customer) {
             <span role="img" aria-label="user" className="mr-2">👤</span>
             Thông tin tài khoản
           </button>
-          <button
-            className={`text-left px-4 py-2 rounded font-semibold transition ${
-              tab === 'address'
-                ? 'bg-[#0078F2] text-white shadow'
-                : 'hover:bg-[#232323] text-gray-200'
-            }`}
-            onClick={() => setTab('address')}
-          >
-            <span role="img" aria-label="address" className="mr-2">🏠</span>
-            Quản lý địa chỉ
-          </button>
+          {/* Đã xóa tab quản lý địa chỉ */}
           <button
             className={`text-left px-4 py-2 rounded font-semibold transition ${
               tab === 'orders'
@@ -90,7 +79,6 @@ if (!customer) {
               Quản trị
             </button>
           )}
-
         </nav>
       </aside>
       {/* Main content */}
@@ -120,9 +108,7 @@ if (!customer) {
             </Link>
           </>
         )}
-        {tab === 'address' && (
-          <AddressManager />
-        )}
+        {/* Đã xóa phần quản lý địa chỉ */}
         {tab === 'orders' && (
           <div className="mt-2">
             <OrderHistory />
@@ -131,7 +117,7 @@ if (!customer) {
         {tab === 'wishlist' && (
           <WishlistGames userId={customer?.id} />
         )}
-          {tab === 'library' && (
+        {tab === 'library' && (
           <Library customerId={customer?.id} />
         )}
       </main>

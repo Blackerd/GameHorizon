@@ -25,10 +25,13 @@ public class OrderController {
     private final OrderService orderService;
 
     @PostMapping
-    public int saveOrder(@RequestParam OrderMethod method, @RequestParam OrderStatus status,
-            @RequestBody OrderRequestDTO orderRequestDTO) {
-        orderRequestDTO.setPaymentMethod(method.getValue());
-        orderRequestDTO.setStatus(status.getValue());
+    public int saveOrder(@RequestBody OrderRequestDTO orderRequestDTO) {
+        // Mặc định trạng thái là COMPLETED nếu FE không gửi lên
+        if (orderRequestDTO.getStatus() == null || orderRequestDTO.getStatus().isEmpty()) {
+            orderRequestDTO.setStatus("COMPLETED");
+        }
+        // Luôn set paymentMethod là CARD (FE chỉ gửi CARD)
+        orderRequestDTO.setPaymentMethod("CARD");
         return orderService.saveOrder(orderRequestDTO);
     }
 
@@ -79,16 +82,17 @@ public class OrderController {
             @PathVariable int customerId) {
         return orderService.getOrdersByStatusAndCustomerId(status, customerId);
     }
+
     @GetMapping("/library/{customerId}")
     public List<OrderDetailResponseDTO> getLibrary(@PathVariable int customerId) {
         return orderService.getLibraryByCustomerId(customerId);
     }
+
     @GetMapping("/history/{customerId}")
     public List<OrderResponseDTO> getOrderHistory(
-        @PathVariable int customerId,
-        @RequestParam(defaultValue = "0") int page,
-        @RequestParam(defaultValue = "10") int size
-    ) {
+            @PathVariable int customerId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
         // Triển khai phân trang ở service/repository
         return orderService.getOrderHistory(customerId, page, size);
     }

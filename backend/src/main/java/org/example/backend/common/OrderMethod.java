@@ -4,10 +4,7 @@ import lombok.Getter;
 
 @Getter
 public enum OrderMethod {
-    COD("Thanh toán khi nhận hàng"),
-    VN_PAY("Thanh toán qua VNPay"),
-    MOMO("Thanh toán qua Momo"),
-    ZALO_PAY("Thanh toán qua ZaloPay");
+    CARD("Thanh toán qua thẻ");
 
     private final String value;
 

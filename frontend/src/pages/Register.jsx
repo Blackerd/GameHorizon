@@ -9,7 +9,6 @@ const Register = () => {
     password: '',
     email: '',
     phone: '',
-    address: '',
   });
   const [error, setError] = useState('');
   const { registerCustomer } = useCustomer();
@@ -85,16 +84,6 @@ const Register = () => {
               type="text"
               name="phone"
               value={formData.phone}
-              onChange={handleChange}
-              className="w-full p-2 bg-[#303030] rounded text-white"
-            />
-          </div>
-          <div className="mb-6">
-            <label className="block mb-2">Địa chỉ</label>
-            <input
-              type="text"
-              name="address"
-              value={formData.address}
               onChange={handleChange}
               className="w-full p-2 bg-[#303030] rounded text-white"
             />

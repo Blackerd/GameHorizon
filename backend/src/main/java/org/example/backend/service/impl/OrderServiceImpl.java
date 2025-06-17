@@ -18,6 +18,7 @@ import org.example.backend.repository.OrderRepository;
 import org.example.backend.service.OrderService;
 import org.springframework.stereotype.Service;
 import org.example.backend.model.Customer;
+import org.example.backend.service.EmailService;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -25,8 +26,10 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 /**
- * OrderServiceImpl xử lý các nghiệp vụ liên quan đến đơn hàng cho web bán game digital.
- * - Khi thanh toán thành công, tạo đơn hàng với trạng thái COMPLETED, sinh key cho từng game, gửi email xác nhận.
+ * OrderServiceImpl xử lý các nghiệp vụ liên quan đến đơn hàng cho web bán game
+ * digital.
+ * - Khi thanh toán thành công, tạo đơn hàng với trạng thái COMPLETED, sinh key
+ * cho từng game, gửi email xác nhận.
  * - Không còn logic giao hàng vật lý.
  * - Hỗ trợ lấy lịch sử đơn hàng, doanh thu, v.v.
  */
@@ -41,50 +44,55 @@ public class OrderServiceImpl implements OrderService {
     private final EmailServiceImpl emailService;
 
     /**
-     * Tạo đơn hàng digital: luôn sinh key cho từng game, gửi mail xác nhận, trạng thái luôn COMPLETED.
+     * Tạo đơn hàng digital: luôn sinh key cho từng game, gửi mail xác nhận, trạng
+     * thái luôn COMPLETED.
+     * 
      * @param orderRequestDTO thông tin đơn hàng từ client
      * @return id đơn hàng vừa tạo
      */
     @Override
-public int saveOrder(OrderRequestDTO orderRequestDTO) {
-    // Kiểm tra khách hàng tồn tại
-    Customer customer = customerRepository.findById(orderRequestDTO.getCustomerId())
-        .orElseThrow(() -> new IllegalArgumentException("Customer not found with ID: " + orderRequestDTO.getCustomerId()));
+    public int saveOrder(OrderRequestDTO orderRequestDTO) {
+        // Kiểm tra khách hàng tồn tại
+        Customer customer = customerRepository.findById(orderRequestDTO.getCustomerId())
+                .orElseThrow(() -> new IllegalArgumentException(
+                        "Customer not found with ID: " + orderRequestDTO.getCustomerId()));
 
-    // Lấy danh sách game đã sở hữu
-    List<Integer> ownedGameIds = getLibraryByCustomerId(customer.getId())
-        .stream().map(dto -> dto.getProductResponseDTO().getId()).collect(Collectors.toList());
+        // Lấy danh sách game đã sở hữu
+        List<Integer> ownedGameIds = getLibraryByCustomerId(customer.getId())
+                .stream().map(dto -> dto.getProductResponseDTO().getId()).collect(Collectors.toList());
 
-    // Lọc các game chưa sở hữu để tạo order
-    List<OrderDetail> orderDetails = orderRequestDTO.getOrderDetails().stream()
-        .filter(dto -> !ownedGameIds.contains(dto.getProductId()))
-        .map(this::convertToOrderDetailEntityWithKey)
-        .collect(Collectors.toList());
+        // Lọc các game chưa sở hữu để tạo order
+        List<OrderDetail> orderDetails = orderRequestDTO.getOrderDetails().stream()
+                .filter(dto -> !ownedGameIds.contains(dto.getProductId()))
+                .map(this::convertToOrderDetailEntityWithKey)
+                .collect(Collectors.toList());
 
-    if (orderDetails.isEmpty()) {
-        throw new IllegalArgumentException("Tất cả game trong đơn hàng đã sở hữu.");
+        if (orderDetails.isEmpty()) {
+            throw new IllegalArgumentException("Tất cả game trong đơn hàng đã sở hữu.");
+        }
+
+        // Chỉ cho phép thanh toán qua thẻ
+        if (!"CARD".equalsIgnoreCase(orderRequestDTO.getPaymentMethod())) {
+            throw new IllegalArgumentException("Chỉ hỗ trợ thanh toán qua thẻ!");
+        }
+
+        // Tạo đối tượng Order
+        Order order = Order.builder()
+                .customer(customer)
+                .orderDate(LocalDateTime.now())
+                .totalAmount(orderRequestDTO.getTotalAmount())
+                .status(OrderStatus.COMPLETED.getValue())
+                .paymentMethod(orderRequestDTO.getPaymentMethod())
+                .orderDetails(orderDetails)
+                .build();
+
+        order.getOrderDetails().forEach(orderDetail -> orderDetail.setOrder(order));
+        int orderId = orderRepository.save(order).getId();
+
+        sendPurchaseConfirmationEmail(order);
+
+        return orderId;
     }
-
-    // Tạo đối tượng Order
-    Order order = Order.builder()
-            .customer(customer)
-            .orderDate(LocalDateTime.now())
-            .totalAmount(orderRequestDTO.getTotalAmount())
-            .address(orderRequestDTO.getAddress())
-            .numberPhone(orderRequestDTO.getNumberPhone())
-            .receiver(orderRequestDTO.getReceiver())
-            .status(OrderStatus.COMPLETED.getValue())
-            .paymentMethod(orderRequestDTO.getPaymentMethod())
-            .orderDetails(orderDetails)
-            .build();
-
-    order.getOrderDetails().forEach(orderDetail -> orderDetail.setOrder(order));
-    int orderId = orderRepository.save(order).getId();
-
-    sendPurchaseConfirmationEmail(order);
-
-    return orderId;
-}
 
     /**
      * Chuyển DTO sang entity OrderDetail, đồng thời sinh key cho từng game.
@@ -179,8 +187,6 @@ public int saveOrder(OrderRequestDTO orderRequestDTO) {
         Order order = getOrderById(id);
         if (order != null) {
             order.setTotalAmount(orderRequestDTO.getTotalAmount());
-            order.setAddress(orderRequestDTO.getAddress());
-            order.setNumberPhone(orderRequestDTO.getNumberPhone());
             order.setStatus(orderRequestDTO.getStatus());
             // Không sinh lại key khi update order
             order.setOrderDetails(orderRequestDTO.getOrderDetails().stream()
@@ -220,10 +226,7 @@ public int saveOrder(OrderRequestDTO orderRequestDTO) {
     public void editOrder(int id, OrderEditRequestDTO orderEditRequestDTO) {
         Order order = orderRepository.findById(id).orElse(null);
         if (order != null) {
-            order.setAddress(orderEditRequestDTO.getAddress());
-            order.setNumberPhone(orderEditRequestDTO.getPhone());
             order.setStatus(orderEditRequestDTO.getStatus());
-            order.setReceiver(orderEditRequestDTO.getFullname());
             orderRepository.save(order);
         }
     }
@@ -259,7 +262,8 @@ public int saveOrder(OrderRequestDTO orderRequestDTO) {
     }
 
     /**
-     * Đổi trạng thái đơn hàng (nên chỉ dùng cho huỷ đơn, không dùng cho giao hàng vật lý).
+     * Đổi trạng thái đơn hàng (nên chỉ dùng cho huỷ đơn, không dùng cho giao hàng
+     * vật lý).
      */
     @Override
     public void changeOrderStatus(int orderId, String status) {
@@ -317,10 +321,7 @@ public int saveOrder(OrderRequestDTO orderRequestDTO) {
                 .customerDTO(customerService.getCustomer(order.getCustomer().getId()))
                 .orderDate(order.getOrderDate())
                 .totalAmount(order.getTotalAmount())
-                .address(order.getAddress())
-                .numberPhone(order.getNumberPhone())
                 .status(order.getStatus())
-                .receiver(order.getReceiver())
                 .orderDetails(orderDetailDTOs)
                 .build();
     }
@@ -345,28 +346,30 @@ public int saveOrder(OrderRequestDTO orderRequestDTO) {
                 .product(productService.getById(dto.getProductId()))
                 .build();
     }
+
     // OrderServiceImpl.java
     public List<OrderDetailResponseDTO> getLibraryByCustomerId(int customerId) {
-        List<Order> orders = orderRepository.findByStatusAndCustomerId( OrderStatus.COMPLETED.getValue(), customerId);
+        List<Order> orders = orderRepository.findByStatusAndCustomerId(OrderStatus.COMPLETED.getValue(), customerId);
         return orders.stream()
-            .flatMap(order -> order.getOrderDetails().stream())
-            .map(this::convertToOrderDetailResponseDTO)
-            .collect(Collectors.toList());
+                .flatMap(order -> order.getOrderDetails().stream())
+                .map(this::convertToOrderDetailResponseDTO)
+                .collect(Collectors.toList());
     }
-    public boolean hasUserOwnedGame(int customerId, int productId) {
-    List<OrderDetailResponseDTO> library = getLibraryByCustomerId(customerId);
-    return library.stream().anyMatch(dto -> dto.getProductResponseDTO().getId() == productId);
-}
 
-@Override
-public List<OrderResponseDTO> getOrderHistory(int customerId, int page, int size) {
-    // Ví dụ: phân trang đơn giản
-    List<Order> orders = orderRepository.findByCustomerId(customerId);
-    int fromIndex = Math.min(page * size, orders.size());
-    int toIndex = Math.min(fromIndex + size, orders.size());
-    List<Order> pagedOrders = orders.subList(fromIndex, toIndex);
-    return pagedOrders.stream()
-            .map(this::convertToOrderResponseDTO)
-            .collect(Collectors.toList());
-}
+    public boolean hasUserOwnedGame(int customerId, int productId) {
+        List<OrderDetailResponseDTO> library = getLibraryByCustomerId(customerId);
+        return library.stream().anyMatch(dto -> dto.getProductResponseDTO().getId() == productId);
+    }
+
+    @Override
+    public List<OrderResponseDTO> getOrderHistory(int customerId, int page, int size) {
+        // Ví dụ: phân trang đơn giản
+        List<Order> orders = orderRepository.findByCustomerId(customerId);
+        int fromIndex = Math.min(page * size, orders.size());
+        int toIndex = Math.min(fromIndex + size, orders.size());
+        List<Order> pagedOrders = orders.subList(fromIndex, toIndex);
+        return pagedOrders.stream()
+                .map(this::convertToOrderResponseDTO)
+                .collect(Collectors.toList());
+    }
 }

@@ -32,18 +32,12 @@ public class Order {
     @Column(name = "total_amount", nullable = false)
     private Integer totalAmount; // Đảm bảo rằng tên trường này trùng khớp với tên trong cơ sở dữ liệu
 
-    private String address;
-
-    private String numberPhone;
-
     private String paymentMethod;
 
     private String status;
 
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL)
     private List<OrderDetail> orderDetails = new ArrayList<>();
-
-    private String receiver;
 
     private String activationKey;
 
