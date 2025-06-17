@@ -11,8 +11,9 @@ const UserProfile = () => {
   const [tab, setTab] = useState('profile');
   const navigate = useNavigate();
 
-  if (!customer) return <div className="p-8 text-center text-white">Bạn chưa đăng nhập.</div>;
-
+if (!customer) {
+  return <Navigate to="/login" replace />;
+}
   return (
     <div className="max-w-4xl mx-auto flex bg-gradient-to-br from-[#23283a] to-[#181c24] rounded-2xl mt-12 shadow-2xl overflow-hidden min-h-[520px] border border-[#232323]">
       {/* Sidebar */}

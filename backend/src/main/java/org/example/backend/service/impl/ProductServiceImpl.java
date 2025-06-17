@@ -9,6 +9,10 @@ import org.example.backend.model.Product;
 import org.example.backend.repository.ProductRepository;
 import org.example.backend.service.ProductService;
 import org.springframework.stereotype.Service;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+
 
 import java.util.ArrayList;
 import java.util.List;
@@ -98,21 +102,6 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public List<ProductResponseDTO> getProductByName(String nameProduct) {
-        List<Product> products = productRepository.findByNameContainingIgnoreCase(nameProduct);
-        return products.stream()
-                .map(product -> ProductResponseDTO.builder()
-                        .categoryName(product.getCategory().getName())
-                        .price(product.getPrice())
-                        .name(product.getName())
-                        .img(product.getImg())
-                        .id(product.getId())
-                        .detail(product.getDetail())
-                        .build())
-                .collect(Collectors.toList());
-    }
-
-    @Override
     public List<ProductResponseDTO> findByNameContainingIgnoreCase(String name) {
         List<Product> products = productRepository.findByNameContainingIgnoreCase(name);
         List<ProductResponseDTO> productResponseDTOS = new ArrayList<>();
@@ -132,4 +121,10 @@ public class ProductServiceImpl implements ProductService {
     public Product getById(int id) {
         return productRepository.findById(id).orElse(null);
     }
+    @Override
+    public Page<Product> advancedSearch(String name, String category, Double minPrice, Double maxPrice, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        return productRepository.advancedSearch(name, category, minPrice, maxPrice, pageable);
+    }
+    
 }

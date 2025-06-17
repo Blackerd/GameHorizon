@@ -6,6 +6,9 @@ import org.example.backend.dto.request.ProductRequestDTO;
 import org.example.backend.dto.response.ProductResponseDTO;
 import org.example.backend.service.ProductService;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.data.domain.Page;
+import org.example.backend.model.Product;
+
 
 import java.util.List;
 
@@ -51,8 +54,16 @@ public class ProductController {
         return productService.findByNameContainingIgnoreCase(name);
     }
 
+  
     @GetMapping("/search")
-    public List<ProductResponseDTO> getProductByName(@RequestParam String name) {
-        return productService.getProductByName(name);
+    public Page<Product> searchProducts(
+        @RequestParam(required = false) String name,
+        @RequestParam(required = false) String category,
+        @RequestParam(required = false) Double minPrice,
+        @RequestParam(required = false) Double maxPrice,
+        @RequestParam(defaultValue = "0") int page,
+        @RequestParam(defaultValue = "10") int size
+    ) {
+        return productService.advancedSearch(name, category, minPrice, maxPrice, page, size);
     }
 }

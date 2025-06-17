@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState } from 'react';
+import React, { createContext, useContext, useState,useEffect } from 'react';
 import { login, register } from '../api/authApi';
 
 const CustomerContext = createContext();
@@ -15,9 +15,10 @@ export const CustomerProvider = ({ children }) => {
   const loginCustomer = async (username, password) => {
     try {
       const { data } = await login({ username, password });
-      setCustomer(data);
-      localStorage.setItem('customer', JSON.stringify(data));
-      return data;
+      setCustomer(data.user);
+      localStorage.setItem('customer', JSON.stringify(data.user));
+      localStorage.setItem('token', data.token);
+      return data.user;
     } catch (error) {
       console.error('Lỗi đăng nhập:', {
         message: error.message,
@@ -46,7 +47,18 @@ export const CustomerProvider = ({ children }) => {
   const logoutCustomer = () => {
     setCustomer(null);
     localStorage.removeItem('customer');
+    localStorage.removeItem('token');
   };
+
+    // Tự động logout khi tắt tab, reload hoặc đóng trình duyệt
+  useEffect(() => {
+    const handleUnload = () => {
+      logoutCustomer();
+    };
+    window.addEventListener('beforeunload', handleUnload);
+    return () => window.removeEventListener('beforeunload', handleUnload);
+  }, []);
+
 
   return (
     <CustomerContext.Provider value={{

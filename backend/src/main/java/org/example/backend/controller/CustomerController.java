@@ -84,7 +84,7 @@ public ResponseEntity<?> login(@RequestBody LoginRequest loginRequest) {
     if (cart != null) {
         cus.setCartId(cart.getId());
     } else {
-        cus.setCartId(-1); // hoặc 0, hoặc null tùy logic của bạn
+        cus.setCartId(-1); 
     }
     String roleStr = (cus.isRole() ? "ADMIN" : "USER");
     String token = jwtUtil.generateToken(cus.getUsername(), roleStr);
