@@ -18,10 +18,10 @@ public class SecurityConfig {
 
 @Bean
 public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-    http
-        .csrf(csrf -> csrf.disable())
-        .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-        .authorizeHttpRequests(auth -> auth
+    http.cors();
+    http.csrf().disable();
+    http.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
+    http.authorizeHttpRequests(auth -> auth
             .requestMatchers(
                 "/api/customer/login",
                 "/api/customer",
@@ -32,8 +32,8 @@ public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
             .requestMatchers("/api/admin/**").hasRole("ADMIN")
             .requestMatchers("/api/customer/**", "/api/cart/**", "/api/order/**").hasAnyRole("USER", "ADMIN")
             .anyRequest().permitAll()
-        )
-        .addFilterBefore(new JwtAuthenticationFilter(jwtUtil), UsernamePasswordAuthenticationFilter.class);
+    );
+    http.addFilterBefore(new JwtAuthenticationFilter(jwtUtil), UsernamePasswordAuthenticationFilter.class);
 
     return http.build();
 }

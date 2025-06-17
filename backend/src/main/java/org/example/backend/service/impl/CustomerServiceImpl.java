@@ -43,6 +43,21 @@ public class CustomerServiceImpl implements CustomerService {
         return id;
     }
 
+
+    @Override
+    public CustomerResponseDTO getCustomerByUsername(String username) {
+        Customer customer = customerRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy customer"));
+        return CustomerResponseDTO.builder()
+                .fullname(customer.getFullname())
+                .username(customer.getUsername())
+                .email(customer.getEmail())
+                .phone(customer.getPhone())
+                .id(customer.getId())
+                .role(customer.isRole())
+                .build();
+    }
+
     @Override
     public void updateCustomer(int customerId, CustomerRequestDTO request) {
         Customer customer = getCustomerById(customerId);

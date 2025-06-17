@@ -15,6 +15,11 @@ export const CustomerProvider = ({ children }) => {
   const loginCustomer = async (username, password) => {
     try {
       const { data } = await login({ username, password });
+      // Kiểm tra dữ liệu trả về
+    if (!data.user?.id || !data.user?.cartId) {
+      alert('Lỗi: Thiếu thông tin user hoặc cartId!');
+      throw new Error('Thiếu thông tin user hoặc cartId');
+    }
       setCustomer(data.user);
       localStorage.setItem('customer', JSON.stringify(data.user));
       localStorage.setItem('token', data.token);

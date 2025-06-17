@@ -1,10 +1,10 @@
 package org.example.backend.dto.request;
 
-import lombok.Getter;
+import lombok.*;
 
 import java.io.Serializable;
 
-@Getter
+@Data
 public class ProductRequestDTO implements Serializable {
     private String name;
     private String img;

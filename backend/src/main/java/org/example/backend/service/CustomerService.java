@@ -32,4 +32,6 @@ public interface CustomerService {
     void initPasswordReset(String username);
 
     void changePassword(int customerId, String oldPassword, String newPassword);
+
+    CustomerResponseDTO getCustomerByUsername(String username);
 }

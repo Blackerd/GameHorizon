@@ -1,12 +1,9 @@
 package org.example.backend.dto.response;
 
-import lombok.Builder;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
-@Getter
 @Builder
-@Setter
+@Data
 public class CustomerResponseDTO {
     private int id;
 

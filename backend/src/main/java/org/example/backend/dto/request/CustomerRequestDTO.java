@@ -2,11 +2,11 @@ package org.example.backend.dto.request;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotNull;
-import lombok.Getter;
+import lombok.*;
 
 import java.io.Serializable;
 
-@Getter
+@Data
 public class CustomerRequestDTO implements Serializable {
 
     @NotNull(message = "Fullname không được để trống ")

@@ -1,11 +1,10 @@
 package org.example.backend.dto.response;
 
-import lombok.Builder;
-import lombok.Getter;
+import lombok.*;
 
 import java.util.List;
 @Builder
-@Getter
+@Data
 public class CartResponseDTO {
     private int id;
     private int customerId;
