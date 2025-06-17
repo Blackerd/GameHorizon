@@ -23,3 +23,6 @@ export const createCustomer = (data) =>
 
 export const initPasswordReset = (username) =>
   axiosInstance.post(`/customer/initPasswordReset/${username}`);
+
+export const resetPassword = (username, resetCode, newPassword) =>
+  axiosInstance.post(`/customer/resetPassword/${username}?resetCode=${resetCode}&newPassword=${newPassword}`);

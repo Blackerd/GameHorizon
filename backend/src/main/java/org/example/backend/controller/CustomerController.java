@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.http.ResponseEntity;
 import java.util.Map;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.example.backend.config.JwtUtil; 
+import org.example.backend.config.JwtUtil;
 import org.example.backend.dto.response.CartResponseDTO;
 
 import java.util.List;
@@ -51,8 +51,7 @@ public class CustomerController {
         customerService.updateByAdmin(customerId, customer);
     }
 
-    
-    @PreAuthorize("hasRole('ADMIN')")   
+    @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/{customerId}")
     public void deleteCustomer(@PathVariable int customerId) {
         customerService.deleteCustomer(customerId);
@@ -73,26 +72,24 @@ public class CustomerController {
         return customerService.checkUsername(username);
     }
 
- 
-@PostMapping("/login")
-public ResponseEntity<?> login(@RequestBody LoginRequest loginRequest) {
-    CustomerResponseDTO cus = customerService.login(loginRequest.getUsername(), loginRequest.getPassword());
-    if (cus == null) {
-        return ResponseEntity.status(401).body(Map.of("error", "Invalid username or password"));
+    @PostMapping("/login")
+    public ResponseEntity<?> login(@RequestBody LoginRequest loginRequest) {
+        CustomerResponseDTO cus = customerService.login(loginRequest.getUsername(), loginRequest.getPassword());
+        if (cus == null) {
+            return ResponseEntity.status(401).body(Map.of("error", "Invalid username or password"));
+        }
+        CartResponseDTO cart = cartService.getCartByCustomerId(cus.getId());
+        if (cart != null) {
+            cus.setCartId(cart.getId());
+        } else {
+            cus.setCartId(-1);
+        }
+        String roleStr = (cus.isRole() ? "ADMIN" : "USER");
+        String token = jwtUtil.generateToken(cus.getUsername(), roleStr);
+        return ResponseEntity.ok(Map.of(
+                "token", token,
+                "user", cus));
     }
-    CartResponseDTO cart = cartService.getCartByCustomerId(cus.getId());
-    if (cart != null) {
-        cus.setCartId(cart.getId());
-    } else {
-        cus.setCartId(-1); 
-    }
-    String roleStr = (cus.isRole() ? "ADMIN" : "USER");
-    String token = jwtUtil.generateToken(cus.getUsername(), roleStr);
-    return ResponseEntity.ok(Map.of(
-        "token", token,
-        "user", cus
-    ));
-}   
 
     @PostMapping("/resetPassword/{username}")
     public void resetPassword(
@@ -102,10 +99,17 @@ public ResponseEntity<?> login(@RequestBody LoginRequest loginRequest) {
         customerService.resetPassword(username, resetCode, newPassword);
     }
 
-
     @PostMapping("/initPasswordReset/{username}")
-    public void initPasswordReset(@PathVariable String username) {
-        customerService.initPasswordReset(username);
+    public ResponseEntity<?> initPasswordReset(@PathVariable String username) {
+        try {
+            customerService.initPasswordReset(username);
+            return ResponseEntity.ok("Đã gửi mã xác nhận về email.");
+        } catch (Exception e) {
+            // Log lỗi chi tiết cho backend
+            e.printStackTrace();
+            // Trả về lỗi chi tiết cho FE
+            return ResponseEntity.status(500).body("Lỗi gửi mail: " + e.getMessage());
+        }
     }
 
     @PutMapping("/updateByUser/{id}")
@@ -119,4 +123,3 @@ public ResponseEntity<?> login(@RequestBody LoginRequest loginRequest) {
     }
 
 }
-
