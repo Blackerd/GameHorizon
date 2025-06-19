@@ -16,8 +16,7 @@ const Library = ({ customerId }) => {
   };
 
   return (
-    <div className="p-6">
-      <h2 className="text-2xl font-bold mb-6 text-white">🎮 Thư viện game của bạn</h2>
+    <>
       {games.length === 0 ? (
         <div className="text-gray-400">Bạn chưa mua game nào.</div>
       ) : (
@@ -53,7 +52,7 @@ const Library = ({ customerId }) => {
           ))}
         </div>
       )}
-    </div>
+    </>
   );
 };
 
