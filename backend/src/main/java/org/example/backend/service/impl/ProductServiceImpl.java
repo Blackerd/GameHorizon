@@ -189,7 +189,7 @@ public class ProductServiceImpl implements ProductService {
         // Set system requirements mới
         if (dto.getSystemRequirements() != null) {
             var reqDto = dto.getSystemRequirements();
-            SystemRequirements req = new SystemRequirements();
+            SystemRequirements req = product.getSystemRequirements();
             if (req == null) {
                 req = new SystemRequirements();
                 req.setProduct(product);
