@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useCart } from '../context/CartContext.jsx';
 import { useCustomer } from '../context/CustomerContext.jsx';
 import { createOrder } from '../api/orderApi';
+import toast from 'react-hot-toast';
 
 const Checkout = () => {
   const { cart, clearCart } = useCart();
@@ -17,6 +18,7 @@ const Checkout = () => {
     cvv: '',
   });
   const [error, setError] = useState('');
+  const [fieldError, setFieldError] = useState({});
 
   const total = cart.reduce(
     (sum, item) => sum + ((item.product?.price || item.price || 0) * (item.quantity || 1)),
@@ -25,29 +27,50 @@ const Checkout = () => {
 
   const handleCardChange = (e) => {
     setCardInfo({ ...cardInfo, [e.target.name]: e.target.value });
+    setFieldError({ ...fieldError, [e.target.name]: validateField(e.target.name, e.target.value) });
+    setError('');
   };
 
-  const validateCard = () => {
-    if (!/^\d{16}$/.test(cardInfo.cardNumber.replace(/\s/g, ''))) return 'Số thẻ phải đủ 16 số';
-    if (!cardInfo.cardHolder.trim()) return 'Vui lòng nhập tên chủ thẻ';
-    if (!/^\d{2}\/\d{2}$/.test(cardInfo.expDate)) return 'Ngày hết hạn phải dạng MM/YY';
-    if (!/^\d{3,4}$/.test(cardInfo.cvv)) return 'CVV phải 3-4 số';
+  const validateField = (name, value) => {
+    switch (name) {
+      case 'cardNumber':
+        if (!/^\d{16}$/.test(value.replace(/\s/g, ''))) return 'Số thẻ phải đủ 16 số';
+        break;
+      case 'cardHolder':
+        if (!value.trim()) return 'Vui lòng nhập tên chủ thẻ';
+        break;
+      case 'expDate':
+        if (!/^\d{2}\/\d{2}$/.test(value)) return 'Ngày hết hạn phải dạng MM/YY';
+        break;
+      case 'cvv':
+        if (!/^\d{3,4}$/.test(value)) return 'CVV phải 3-4 số';
+        break;
+      default:
+        break;
+    }
     return '';
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!customer) {
-      alert('Vui lòng đăng nhập để thanh toán');
-      navigate('/login');
-      return;
-    }
-    const cardError = validateCard();
-    if (cardError) {
-      setError(cardError);
+    // Validate all fields before submit
+    const newFieldError = {};
+    Object.entries(cardInfo).forEach(([k, v]) => {
+      const err = validateField(k, v);
+      if (err) newFieldError[k] = err;
+    });
+    setFieldError(newFieldError);
+    if (Object.values(newFieldError).some(Boolean)) {
+      toast.error('Vui lòng nhập đúng và đầy đủ thông tin thẻ!');
+      setError('');
       return;
     }
     setError('');
+    if (!customer) {
+      toast.error('Vui lòng đăng nhập để thanh toán!');
+      navigate('/login');
+      return;
+    }
     try {
       await createOrder(
         {
@@ -58,14 +81,14 @@ const Checkout = () => {
           })),
           totalAmount: total,
           paymentMethod: 'CARD',
-            status: 'COMPLETED'
+          status: 'COMPLETED'
         }
       );
       await clearCart();
-      alert('Thanh toán thành công! Game đã được thêm vào thư viện của bạn.');
+      toast.success('Thanh toán thành công! Game đã được thêm vào thư viện của bạn.');
       navigate('/');
     } catch (error) {
-      alert('Lỗi khi đặt hàng. Vui lòng thử lại.');
+      toast.error('Lỗi khi đặt hàng. Vui lòng thử lại!');
       console.error('Lỗi đặt hàng:', error);
     }
   };
@@ -87,8 +110,8 @@ const Checkout = () => {
               autoComplete="cc-number"
               className="w-full p-2 bg-[#303030] rounded text-white tracking-widest"
               placeholder="1234 5678 9012 3456"
-              required
             />
+            <div className="text-red-400 text-sm h-5 mt-1 overflow-hidden">{fieldError.cardNumber || '\u00A0'}</div>
           </div>
           <div>
             <label className="block mb-2 font-semibold">Tên chủ thẻ</label>
@@ -100,8 +123,8 @@ const Checkout = () => {
               autoComplete="cc-name"
               className="w-full p-2 bg-[#303030] rounded text-white uppercase"
               placeholder="NGUYEN VAN A"
-              required
             />
+            <div className="text-red-400 text-sm h-5 mt-1 overflow-hidden">{fieldError.cardHolder || '\u00A0'}</div>
           </div>
           <div className="flex gap-4">
             <div className="flex-1">
@@ -115,8 +138,8 @@ const Checkout = () => {
                 autoComplete="cc-exp"
                 className="w-full p-2 bg-[#303030] rounded text-white"
                 placeholder="MM/YY"
-                required
               />
+              <div className="text-red-400 text-sm h-5 mt-1 overflow-hidden">{fieldError.expDate || '\u00A0'}</div>
             </div>
             <div className="flex-1">
               <label className="block mb-2 font-semibold">CVV</label>
@@ -129,8 +152,8 @@ const Checkout = () => {
                 autoComplete="cc-csc"
                 className="w-full p-2 bg-[#303030] rounded text-white"
                 placeholder="123"
-                required
               />
+              <div className="text-red-400 text-sm h-5 mt-1 overflow-hidden">{fieldError.cvv || '\u00A0'}</div>
             </div>
           </div>
           <div className="mb-2">

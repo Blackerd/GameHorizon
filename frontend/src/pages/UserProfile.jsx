@@ -208,6 +208,7 @@ const UserProfile = () => {
                           // Có thể cần reload lại user context ở đây
                         } catch (e) {
                           toast.error('Cập nhật thất bại!');
+                          console.log(newPhone)
                         }
                         setPhoneLoading(false);
                       }}
@@ -222,6 +223,7 @@ const UserProfile = () => {
                 )}
               </div>
             </div>
+
           </ProfileTabContainer>
         )}
         {tab === 'changePassword' && (

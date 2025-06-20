@@ -170,13 +170,11 @@ const ProductManagement = () => {
 
   // Delete handler
   const handleDelete = async (id) => {
-    if (!window.confirm('Bạn có chắc chắn muốn xóa sản phẩm này không?')) return;
     try {
       await deleteProduct(id);
       queryClient.invalidateQueries(['products']);
       toast.success('Xóa sản phẩm thành công');
-    } catch
-    {
+    } catch {
       toast.error('Lỗi khi xóa sản phẩm');
     }
   };
