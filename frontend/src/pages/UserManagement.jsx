@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useCustomer } from '../context/CustomerContext';
 import {
   getAllCustomers,
   getCustomerById,
@@ -9,6 +10,8 @@ import {
 } from '../api/customerApi';
 import { Trash2, Edit, Plus, Eye } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { Navigate } from 'react-router-dom';
+
 
 
 const UserManagement = () => {
