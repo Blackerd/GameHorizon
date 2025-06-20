@@ -4,6 +4,9 @@ import { useQuery } from '@tanstack/react-query';
 import { getCategories } from '../../api/categoryApi';
 import { useCustomer } from '../../context/CustomerContext';
 import { FaSearch } from 'react-icons/fa';
+import toast from 'react-hot-toast';
+import { useNavigate } from 'react-router-dom';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 
 const getWishlist = (userId = 'guest') => {
@@ -27,19 +30,10 @@ const HotGamesSection = () => {
       return res.data || res;
     }
   });
-
   const [activeTab, setActiveTab] = useState('Action');
   const [search, setSearch] = useState('');
   const [selected, setSelected] = useState(0);
   const [wishlist, setWishlistState] = useState(getWishlist(userId));
-
-  useEffect(() => {
-    setWishlistState(getWishlist(userId));
-  }, [userId]);
-
-  const tabList = categories.length
-    ? categories.map(cat => cat.name)
-    : ['Discover', 'Browse', 'News'];
 
   const filteredProducts = useMemo(() => {
     let list = products;
@@ -52,9 +46,33 @@ const HotGamesSection = () => {
     return list;
   }, [products, activeTab, search]);
 
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    setWishlistState(getWishlist(userId));
+  }, [userId]);
+
+  useEffect(() => {
+    if (filteredProducts.length <= 1) return;
+    const interval = setInterval(() => {
+      setSelected(prev => (prev + 1) % filteredProducts.length);
+    }, 4000);
+    return () => clearInterval(interval);
+  }, [filteredProducts.length]);
+
+  const tabList = categories.length
+    ? categories.map(cat => cat.name)
+    : ['Discover', 'Browse', 'News'];
+
+
   const mainProduct = filteredProducts[selected] || filteredProducts[0];
 
   const handleAddWishlist = (productId) => {
+    if (!customer) {
+      toast.error('Vui lòng đăng nhập để thêm vào wishlist!', { duration: 2000, position: 'top-center' });
+      setTimeout(() => navigate('/login'), 1200);
+      return;
+    }
     if (!wishlist.includes(productId)) {
       const newWishlist = [...wishlist, productId];
       setWishlist(newWishlist, userId);
@@ -162,6 +180,22 @@ const HotGamesSection = () => {
           />
             </div>
           )}
+          <button
+            className="absolute left-2 top-1/2 -translate-y-1/2 bg-black bg-opacity-40 hover:bg-opacity-70 text-white rounded-full p-2 z-20"
+            onClick={() => setSelected(selected === 0 ? filteredProducts.length - 1 : selected - 1)}
+            aria-label="Trước"
+            style={{display: filteredProducts.length > 1 ? 'block' : 'none'}}
+          >
+            <ChevronLeft size={28} />
+          </button>
+          <button
+            className="absolute right-2 top-1/2 -translate-y-1/2 bg-black bg-opacity-40 hover:bg-opacity-70 text-white rounded-full p-2 z-20"
+            onClick={() => setSelected((selected + 1) % filteredProducts.length)}
+            aria-label="Sau"
+            style={{display: filteredProducts.length > 1 ? 'block' : 'none'}}
+          >
+            <ChevronRight size={28} />
+          </button>
         </div>
         
 {/* Game List Sidebar */}

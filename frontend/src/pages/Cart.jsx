@@ -15,16 +15,12 @@ const Cart = () => {
 
   // Xử lý xóa từng sản phẩm
   const handleRemove = (cartItemId) => {
-    if (window.confirm('Bạn chắc chắn muốn xóa sản phẩm này khỏi giỏ hàng?')) {
-      removeFromCart(cartItemId);
-    }
+    removeFromCart(cartItemId);
   };
 
   // Xử lý xóa toàn bộ giỏ hàng
   const handleClear = () => {
-    if (window.confirm('Bạn chắc chắn muốn xóa toàn bộ giỏ hàng?')) {
-      clearCart();
-    }
+    clearCart();
   };
 
   // Xử lý chuyển sang trang thanh toán
