@@ -4,14 +4,23 @@ import { ShoppingCart, Check } from 'lucide-react';
 import { useCart } from '../../context/CartContext';
 import { useOwnedGames } from '../../context/OwnedGamesContext';
 import toast from 'react-hot-toast';
+import { useCustomer } from '../../context/CustomerContext';
+import { useNavigate } from 'react-router-dom';
 
 const GameCard = ({ product }) => {
 const { addToCart, isInCart } = useCart();
   const ownedGameIds = useOwnedGames();
   const isOwned = ownedGameIds.includes(product.id);
   const inCart = isInCart(product.id);
+  const { customer } = useCustomer();
+  const navigate = useNavigate();
 
 const handleAddToCart = () => {
+  if (!customer) {
+    toast.error('Vui lòng đăng nhập để thêm vào giỏ hàng!', { duration: 2000, position: 'top-center' });
+    setTimeout(() => navigate('/login'), 1200);
+    return;
+  }
   if (isOwned) {
     toast.error('Bạn đã sở hữu game này!');
     return;
@@ -21,7 +30,6 @@ const handleAddToCart = () => {
     return;
   }
   if (product.price === 0) {
-    // Có thể chuyển hướng sang trang chơi game miễn phí hoặc thông báo
     toast('Game này miễn phí, hãy chơi ngay!');
     return;
   }

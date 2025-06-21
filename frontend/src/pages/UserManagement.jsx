@@ -40,13 +40,11 @@ const UserManagement = () => {
 
   // Xóa user
   const handleDelete = async (id) => {
-    if (!window.confirm('Bạn có chắc chắn muốn xóa khách hàng này?')) return;
     try {
       await deleteCustomer(id);
       queryClient.invalidateQueries(['customers']);
       toast.success('Xóa khách hàng thành công');
-    } catch
-    {
+    } catch {
       toast.error('Không thể xóa khách hàng (có thể khách hàng này có đơn hàng)');
     }
   };

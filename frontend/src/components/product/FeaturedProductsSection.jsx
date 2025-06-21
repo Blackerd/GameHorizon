@@ -37,9 +37,9 @@ const FeaturedProductsSection = () => {
           </button>
         </div>
       </div>
-      <div className="flex gap-6 overflow-x-auto pb-2">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
         {showProducts.map(product => (
-          <div key={product.id} className="w-56 flex-shrink-0">
+          <div key={product.id}>
             <GameCard product={product} />
           </div>
         ))}

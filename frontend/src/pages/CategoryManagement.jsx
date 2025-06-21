@@ -4,6 +4,7 @@ import { useCategories } from '../hooks/useCategories';
 import { createCategory, updateCategory, deleteCategory } from '../api/categoryApi';
 import { uploadImage } from '../api/imageApi'; // Thêm dòng này
 import { Trash2, Edit } from 'lucide-react';
+import toast from 'react-hot-toast';
 
 const CategoryManagement = () => {
   const queryClient = useQueryClient();
@@ -23,9 +24,9 @@ const CategoryManagement = () => {
       const { data } = await uploadImage(file);
       setImageUrl(data.url);
       setForm((prev) => ({ ...prev, img: data.url }));
-      alert('Tải ảnh thành công!');
+      toast.success('Tải ảnh thành công!');
     } catch {
-      alert('Không thể tải ảnh lên');
+      toast.error('Không thể tải ảnh lên');
     }
   };
 
@@ -46,8 +47,9 @@ const CategoryManagement = () => {
       setImageUrl('');
       setFile(null);
       queryClient.invalidateQueries(['categories']);
+      toast.success('Lưu danh mục thành công!');
     } catch {
-      alert('Lỗi khi lưu danh mục');
+      toast.error('Lỗi khi lưu danh mục');
     }
   };
 
